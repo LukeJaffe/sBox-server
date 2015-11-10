@@ -3,13 +3,15 @@
 require("config.inc.php");
 if (!empty($_POST)) {
  //initial query
- $query = "INSERT INTO track ( trackID, status, description ) VALUES ( :trackID, :status, :description)";
+ $query = "INSERT INTO track ( trackID, status, description, user ) VALUES ( :trackID, :status, :description, :userID)";
 
  //Update query
  $query_params = array(
  ':trackID' => $_POST['trackID'],
  ':status' => $_POST['status'],
-':description' => $_POST['description']
+':description' => $_POST['description'],
+':userID' => $_POST['userID']
+
  );
 
  //execute query

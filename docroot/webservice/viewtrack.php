@@ -5,9 +5,9 @@ require("config.inc.php");
 
 if (!empty($_POST)) {
     //gets user's info based off of a username.
-    $query = " SELECT DISTINCT assignedRelation.userID, track.trackID, description, status 
-			FROM track, assignedRelation
-			WHERE userID = :userID
+    $query = " SELECT DISTINCT trackID, description, status 
+			FROM track
+			WHERE user = :userID
         ";
     
     $query_params = array(
