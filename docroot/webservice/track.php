@@ -35,7 +35,7 @@ if (!empty($_POST)) {
 
 
     
-    //This will be the variable to determine whether or not the user's information is correct.
+    //This will be the variable to determine whether or not the user's information is corre$
     //we initialize it as false.
     $validated_info = false;
     
@@ -45,7 +45,36 @@ if (!empty($_POST)) {
         //if we encrypted the password, we would unencrypt it here, but in our case we just
         //compare the two passwords
         if ($_POST['trackID'] === $row['trackID']) {
-            $login_ok = true;
+ 		$login_ok = true;
+
+
+ //gets user's info based off of a username.
+    $query = " 
+            UPDATE track SET  status =  'DELIVERED'
+           WHERE 
+               trackID = :trackID
+        ";
+    
+    $query_params = array(
+        ':trackID' => $_POST['trackID']
+    );
+    
+    try {
+        $stmt   = $db->prepare($query);
+        $result = $stmt->execute($query_params);
+    }
+    catch (PDOException $ex) {
+        // For testing, you could use a die and message. 
+        //die("Failed to run query: " . $ex->getMessage());
+        
+        //or just use this use this one to product JSON data:
+        $response["success"] = 0;
+        $response["message"] = "Database Error1. Please Try Again!";
+        die(json_encode($response));
+
+    }
+
+
         }
     }
 
@@ -62,7 +91,7 @@ if (!empty($_POST)) {
     }
 } else {
 ?>
-                <h1>Track</h1> 
+			 <h1>Track</h1> 
                 <form action="track.php" method="post"> 
                     TrackID:<br /> 
                     <input type="text" name="trackID" placeholder="trackID" /> 
@@ -73,6 +102,5 @@ if (!empty($_POST)) {
 }
 
 ?> 
-
 
 
