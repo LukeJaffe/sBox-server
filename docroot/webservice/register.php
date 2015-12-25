@@ -72,14 +72,15 @@ if (!empty($_POST)) {
     //If we have made it here without dying, then we are in the clear to 
     //create a new user.  Let's setup our new query to create a user.  
     //Again, to protect against sql injects, user tokens such as :user and :pass
-    $query = "INSERT INTO user ( userID, fName, lName, password ) VALUES ( :user, :fname, :lname, :pass ) ";
+    $query = "INSERT INTO user ( userID, fName, lName, password, box ) VALUES ( :user, :fname, :lname, :pass, :boxID ) ";
     
     //Again, we need to update our tokens with the actual data:
     $query_params = array(
         ':user' => $_POST['username'],
 	':fname' => $_POST['fName'],
 	':lname' => $_POST['lName'],
-        ':pass' => $_POST['password']
+        ':pass' => $_POST['password'],
+        ':boxID' => $_POST['boxID']
     );
     
     //time to run our query, and create the user
@@ -116,7 +117,7 @@ if (!empty($_POST)) {
 	<h1>Register</h1> 
 	<form action="register.php" method="post"> 
 	    Username:<br /> 
-	    <input type="text" name="username" value="" /> 
+	    <input type="text" name="username" value="" />
 	    <br /><br /> 
 	    Password:<br /> 
 	    <input type="password" name="password" value="" /> 
@@ -126,6 +127,10 @@ if (!empty($_POST)) {
             <br /><br /> 
             Last Name:<br /> 
             <input type="text" name="lName" value="" />  
+            <br /><br />             
+            BoxID:<br /> 
+            <input type="text" name="boxID" value="" />  
+            <br /><br /> 
 
 
 	    <input type="submit" value="Register New User" /> 

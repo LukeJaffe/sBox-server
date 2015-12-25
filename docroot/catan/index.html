@@ -1,0 +1,253 @@
+<html>
+<body>
+
+<style>
+.my_canvas {
+    background: #eee; 
+    width: 700px; 
+    height: 700px; 
+    border: 1px #ccc solid;
+}
+</style>
+
+
+<canvas id="board" class="my_canvas"></canvas> 
+
+<script type="text/javascript">
+
+var canvas, context;
+
+// get a reference to the board, and the drawing context
+canvas  = document.getElementById('board');
+if ( canvas && canvas.getContext ) 
+{
+    context = canvas.getContext('2d');
+
+} 
+else 
+{
+    // unsupported browser?
+    alert("Couldn't get a reference to the HTML 5 canvas."
+      + "\nYour browser doesn't appear to support this page.");
+}
+
+function clearCanvas( context, canvas ) 
+{
+    context.clearRect( 0, 0, canvas.width, canvas.height );
+}
+
+
+/* HexType class */
+function HexType(resource, roll)
+{
+    this.resource = resource
+    this.roll = roll
+    if (this.resource == 'wood')
+        this.color = '#f00';
+    else if (this.resource == 'wheat')
+        this.color = '#ff0';
+    else if (this.resource == 'pasture')
+        this.color = '#0f0';
+    else if (this.resource == 'stone')
+        this.color = '#00f';
+    else if (this.resource == 'copper')
+        this.color = '#f0f';
+    else if (this.resource == 'desert')
+        this.color = '#0ff';
+}
+
+
+/* Hex class */
+function Hex(x, y, r, t)
+{
+    /* Store inputs */
+    //this.x = x;
+    //this.y = y;
+    //this.r = r;
+    this.t = t;
+    this.s = false;
+
+    /* Calculate and store vertices */
+    a = r/2;
+    b = r/2
+    v = [];
+    v.push([x+r, y]);
+    v.push([x+b, y-a]);
+    v.push([x-b, y-a]);
+    v.push([x-r, y]);
+    v.push([x-b, y+a]);
+    v.push([x+b, y+a]);
+    v.push([x+r, y]);
+    this.v = v
+}
+
+Hex.prototype.draw = function()
+{
+    context.fillStyle = this.t.color;
+    context.beginPath();
+    context.moveTo(this.v[0][0], this.v[0][1]);
+    for (var i = 0; i < this.v.length; i++)
+    {
+        x = this.v[i][0];
+        y = this.v[i][1];
+        context.lineTo(x,y);
+    }
+    context.closePath();
+    context.fill();
+}
+
+Hex.prototype.select = function()
+{
+    this.s = true;
+}
+
+Hex.prototype.deselect = function()
+{
+    this.s = false;
+}
+
+function calc_hex(x0, y0, r)
+{
+    //a = r*(Math.sqrt(3)/2);
+    a = r/2;
+    b = r/2
+    c = [];
+    c.push([x0+r, y0]);
+    c.push([x0+b, y0-a]);
+    c.push([x0-b, y0-a]);
+    c.push([x0-r, y0]);
+    c.push([x0-b, y0+a]);
+    c.push([x0+b, y0+a]);
+    c.push([x0+r, y0]);
+    return c;
+}
+
+function draw_hex(context, points, color)
+{
+    context.fillStyle = color;
+    context.beginPath();
+    context.moveTo(c[0][0], c[0][1]);
+    for (var i = 0; i < c.length; i++)
+    {
+        x = c[i][0];
+        y = c[i][1];
+        context.lineTo(x,y);
+    }
+    context.closePath();
+    context.fill();
+}
+
+function draw (obj) {
+
+    x0 = 150;
+    y0 = 75;
+    r = 25;
+
+    origins = [];
+    /* Origin */
+    origins.push([x0,y0,'#0f0']);
+    /* First circle */
+    origins.push([x0,y0+r,'#f00']);
+    origins.push([x0+1.5*r,y0+r/2,'#f00']);
+    origins.push([x0+1.5*r,y0-r/2,'#f00']);
+    origins.push([x0,y0-r,'#f00']);
+    origins.push([x0-1.5*r,y0-r/2,'#f00']);
+    origins.push([x0-1.5*r,y0+r/2,'#f00']);
+    /* Second circle p1 */
+    origins.push([x0,y0+2*r,'#0f0']);
+    origins.push([x0+3*r,y0+r,'#0f0']);
+    origins.push([x0+3*r,y0-r,'#0f0']);
+    origins.push([x0,y0-2*r,'#0f0']);
+    origins.push([x0-3*r,y0-r,'#0f0']);
+    origins.push([x0-3*r,y0+r,'#0f0']);
+    /* Second circle p2 */
+    origins.push([x0+3*r,y0,'#0f0']);
+    origins.push([x0+1.5*r,y0+1.5*r,'#0f0']);
+    origins.push([x0+1.5*r,y0-1.5*r,'#0f0']);
+    origins.push([x0-3*r,y0,'#0f0']);
+    origins.push([x0-1.5*r,y0-1.5*r,'#0f0']);
+    origins.push([x0-1.5*r,y0+1.5*r,'#0f0']);
+
+
+    /* Calc and draw */
+    for (var i = 0; i < origins.length; i++)
+    {
+        c = calc_hex(origins[i][0], origins[i][1], r);
+        draw_hex(context, c.slice(0), origins[i][2]);
+    }
+
+}
+
+function shuffle(array) {
+  var currentIndex = array.length, temporaryValue, randomIndex;
+
+  // While there remain elements to shuffle...
+  while (0 !== currentIndex) {
+
+    // Pick a remaining element...
+    randomIndex = Math.floor(Math.random() * currentIndex);
+    currentIndex -= 1;
+
+    // And swap it with the current element.
+    temporaryValue = array[currentIndex];
+    array[currentIndex] = array[randomIndex];
+    array[randomIndex] = temporaryValue;
+  }
+
+  return array;
+}
+
+function start()
+{
+    x0 = 150;
+    y0 = 75;
+    r = 25;
+
+    num_hexes = 19;
+
+    resources = ['wood', 'wood', 'wood', 'wood',
+                'wheat', 'wheat', 'wheat', 'wheat',
+                'pasture', 'pasture', 'pasture', 'pasture',
+                'stone', 'stone', 'stone',
+                'copper', 'copper', 'copper',
+                'desert'];
+
+    rolls = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12, 7];
+
+    origins = [ 
+                [0, 0],
+                [0, r], [1.5*r, r/2], [1.5*r, -r/2],        //First circle
+                [0, -r], [-1.5*r, -r/2], [-1.5*r, r/2],     //First circle
+                [0, 2*r], [3*r, r], [3*r, -r],              //Second circle p1
+                [0, -2*r], [-3*r, -r], [-3*r, r],           //Second circle p1
+                [3*r, 0], [1.5*r, 1.5*r], [1.5*r, -1.5*r],  //Second circle p2
+                [-3*r, 0], [-1.5*r, -1.5*r], [-1.5*r, 1.5*r]//Second circle p2
+              ]
+
+    /* Shuffle indeces */
+    indices = [];
+    for (var i = 0; i < num_hexes; i++)
+        indices.push(i);
+    shuffle(indices);
+
+    hexes = [];
+    for (var i = 0; i < num_hexes; i++)
+    {
+        idx = indices[i]
+        /* Create all needed hexes */
+        hexes.push(new Hex(x0+origins[i][0], y0+origins[i][1], r, 
+            new HexType(resources[idx], rolls[idx])));
+    } 
+
+    /* Draw all hexes */
+    for (var i = 0; i < origins.length; i++)
+        hexes[i].draw();
+}
+
+//draw();
+start();
+
+</script> 
+
+</body>
+</html>
