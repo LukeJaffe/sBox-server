@@ -11,7 +11,8 @@
 </style>
 
 
-<canvas id="board" class="my_canvas"></canvas> 
+<canvas id="board" class="my_canvas" width='700px' height='700px'></canvas> 
+<img src="forest.jpg" id = "forest" alt="forest" height="42" width="42">
 
 <script type="text/javascript">
 
@@ -37,23 +38,45 @@ function clearCanvas( context, canvas )
 }
 
 
-/* HexType class */
-function HexType(resource, roll)
+/* HexType class with solid color background*/
+function HexTypeSolid(resource, roll)
 {
     this.resource = resource
     this.roll = roll
     if (this.resource == 'wood')
-        this.color = '#f00';
+        this.color = '#663300';
     else if (this.resource == 'wheat')
-        this.color = '#ff0';
+        this.color = '#FFFF00';
     else if (this.resource == 'pasture')
-        this.color = '#0f0';
+        this.color = '#00FF00';
     else if (this.resource == 'stone')
-        this.color = '#00f';
+        this.color = '#666666';
     else if (this.resource == 'copper')
-        this.color = '#f0f';
+        this.color = '#FF0000';
     else if (this.resource == 'desert')
-        this.color = '#0ff';
+        this.color = '#967117';
+}
+
+/* HexType class with solid color background*/
+function HexTypeTexture(resource, roll)
+{
+    this.resource = resource
+    this.roll = roll
+    if (this.resource == 'wood')
+    {
+        var img = document.getElementById("forest");
+        this.color = context.createPattern(img, "repeat");
+    }
+    else if (this.resource == 'wheat')
+        this.color = '#FFFF00';
+    else if (this.resource == 'pasture')
+        this.color = '#00FF00';
+    else if (this.resource == 'stone')
+        this.color = '#666666';
+    else if (this.resource == 'copper')
+        this.color = '#FF0000';
+    else if (this.resource == 'desert')
+        this.color = '#967117';
 }
 
 
@@ -61,14 +84,14 @@ function HexType(resource, roll)
 function Hex(x, y, r, t)
 {
     /* Store inputs */
-    //this.x = x;
-    //this.y = y;
-    //this.r = r;
+    this.x = x;
+    this.y = y;
+    this.r = r;
     this.t = t;
     this.s = false;
 
     /* Calculate and store vertices */
-    a = r/2;
+    a = (Math.sqrt(3)/2)*r;
     b = r/2
     v = [];
     v.push([x+r, y]);
@@ -81,12 +104,47 @@ function Hex(x, y, r, t)
     this.v = v
 }
 
+function clippedBackgroundImage( ctx, img, w, h )
+{
+    ctx.save(); // Save the context before clipping
+    ctx.clip(); // Clip to whatever path is on the context
+
+    var imgHeight = w / img.width * img.height;
+    if (imgHeight < h){
+    ctx.fillStyle = '#000';
+    ctx.fill();
+    }
+    ctx.drawImage(img,0,0,w,imgHeight);
+
+    ctx.restore(); // Get rid of the clipping region
+}
+
+function slashedRectWithBG( ctx, x, y, w, h, slash, img ){
+  ctx.save(); // Save the context before we muck up its properties
+  ctx.translate(x,y);
+  ctx.beginPath();
+  ctx.moveTo( slash, 0 );       //////////// 
+  ctx.lineTo( w, 0 );          //         //
+  ctx.lineTo( w, h-slash );   //          //
+  ctx.lineTo( w-slash,h );    //          //
+  ctx.lineTo( 0, h );         //         //
+  ctx.lineTo( 0, slash );     ////////////
+  ctx.closePath();
+  clippedBackgroundImage( ctx, img, w, h );
+  ctx.stroke();  // Now draw our path
+  ctx.restore(); // Put the canvas back how it was before we started
+}
+
 Hex.prototype.draw = function()
 {
+    var img = document.getElementById("forest");
+
+    /* Draw fill */
+    /*
     context.fillStyle = this.t.color;
     context.beginPath();
     context.moveTo(this.v[0][0], this.v[0][1]);
-    for (var i = 0; i < this.v.length; i++)
+    for (var i = 1; i < this.v.length; i++)
     {
         x = this.v[i][0];
         y = this.v[i][1];
@@ -94,6 +152,32 @@ Hex.prototype.draw = function()
     }
     context.closePath();
     context.fill();
+    */
+
+    /* Draw outline */
+    context.fillStyle = '#000000';
+    context.beginPath();
+    context.moveTo(this.v[0][0], this.v[0][1]);
+    for (var i = 1; i < this.v.length; i++)
+    {
+        x = this.v[i][0];
+        y = this.v[i][1];
+        context.lineTo(x,y);
+    }
+    context.stroke();
+
+    /* Draw roll circles */
+    context.beginPath();
+    context.arc(this.x, this.y, this.r/3, 0, 2*Math.PI);
+    context.stroke();
+
+    /* Draw roll numbers */
+    context.font = "30px Arial";
+    if (this.t.roll < 10)
+        xoff = r/10;
+    else
+        xoff = r/5
+    context.fillText(this.t.roll.toString(), this.x-xoff, this.y+r/10);
 }
 
 Hex.prototype.select = function()
@@ -104,78 +188,6 @@ Hex.prototype.select = function()
 Hex.prototype.deselect = function()
 {
     this.s = false;
-}
-
-function calc_hex(x0, y0, r)
-{
-    //a = r*(Math.sqrt(3)/2);
-    a = r/2;
-    b = r/2
-    c = [];
-    c.push([x0+r, y0]);
-    c.push([x0+b, y0-a]);
-    c.push([x0-b, y0-a]);
-    c.push([x0-r, y0]);
-    c.push([x0-b, y0+a]);
-    c.push([x0+b, y0+a]);
-    c.push([x0+r, y0]);
-    return c;
-}
-
-function draw_hex(context, points, color)
-{
-    context.fillStyle = color;
-    context.beginPath();
-    context.moveTo(c[0][0], c[0][1]);
-    for (var i = 0; i < c.length; i++)
-    {
-        x = c[i][0];
-        y = c[i][1];
-        context.lineTo(x,y);
-    }
-    context.closePath();
-    context.fill();
-}
-
-function draw (obj) {
-
-    x0 = 150;
-    y0 = 75;
-    r = 25;
-
-    origins = [];
-    /* Origin */
-    origins.push([x0,y0,'#0f0']);
-    /* First circle */
-    origins.push([x0,y0+r,'#f00']);
-    origins.push([x0+1.5*r,y0+r/2,'#f00']);
-    origins.push([x0+1.5*r,y0-r/2,'#f00']);
-    origins.push([x0,y0-r,'#f00']);
-    origins.push([x0-1.5*r,y0-r/2,'#f00']);
-    origins.push([x0-1.5*r,y0+r/2,'#f00']);
-    /* Second circle p1 */
-    origins.push([x0,y0+2*r,'#0f0']);
-    origins.push([x0+3*r,y0+r,'#0f0']);
-    origins.push([x0+3*r,y0-r,'#0f0']);
-    origins.push([x0,y0-2*r,'#0f0']);
-    origins.push([x0-3*r,y0-r,'#0f0']);
-    origins.push([x0-3*r,y0+r,'#0f0']);
-    /* Second circle p2 */
-    origins.push([x0+3*r,y0,'#0f0']);
-    origins.push([x0+1.5*r,y0+1.5*r,'#0f0']);
-    origins.push([x0+1.5*r,y0-1.5*r,'#0f0']);
-    origins.push([x0-3*r,y0,'#0f0']);
-    origins.push([x0-1.5*r,y0-1.5*r,'#0f0']);
-    origins.push([x0-1.5*r,y0+1.5*r,'#0f0']);
-
-
-    /* Calc and draw */
-    for (var i = 0; i < origins.length; i++)
-    {
-        c = calc_hex(origins[i][0], origins[i][1], r);
-        draw_hex(context, c.slice(0), origins[i][2]);
-    }
-
 }
 
 function shuffle(array) {
@@ -199,9 +211,12 @@ function shuffle(array) {
 
 function start()
 {
-    x0 = 150;
-    y0 = 75;
-    r = 25;
+    x0 = 350;
+    y0 = 350;
+    r = 75;
+
+    a = r*0.5;
+    b = r*Math.sqrt(3)/2;
 
     num_hexes = 19;
 
@@ -216,12 +231,12 @@ function start()
 
     origins = [ 
                 [0, 0],
-                [0, r], [1.5*r, r/2], [1.5*r, -r/2],        //First circle
-                [0, -r], [-1.5*r, -r/2], [-1.5*r, r/2],     //First circle
-                [0, 2*r], [3*r, r], [3*r, -r],              //Second circle p1
-                [0, -2*r], [-3*r, -r], [-3*r, r],           //Second circle p1
-                [3*r, 0], [1.5*r, 1.5*r], [1.5*r, -1.5*r],  //Second circle p2
-                [-3*r, 0], [-1.5*r, -1.5*r], [-1.5*r, 1.5*r]//Second circle p2
+                [0, 2*b], [1.5*r, b], [1.5*r, -b],        //First circle
+                [0, -2*b], [-1.5*r, -b], [-1.5*r, b],     //First circle
+                [0, 4*b], [3*r, 2*b], [3*r, -2*b],        //Second circle p1
+                [0, -4*b], [-3*r, -2*b], [-3*r, 2*b],     //Second circle p1
+                [3*r, 0], [1.5*r, 3*b], [1.5*r, -3*b],    //Second circle p2
+                [-3*r, 0], [-1.5*r, -3*b], [-1.5*r, 3*b]  //Second circle p2
               ]
 
     /* Shuffle indeces */
@@ -236,7 +251,7 @@ function start()
         idx = indices[i]
         /* Create all needed hexes */
         hexes.push(new Hex(x0+origins[i][0], y0+origins[i][1], r, 
-            new HexType(resources[idx], rolls[idx])));
+            new HexTypeTexture(resources[idx], rolls[idx])));
     } 
 
     /* Draw all hexes */
@@ -244,7 +259,6 @@ function start()
         hexes[i].draw();
 }
 
-//draw();
 start();
 
 </script> 
