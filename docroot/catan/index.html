@@ -28,6 +28,13 @@
 
 <script type="text/javascript">
 
+function feq(a, b) 
+{
+    if (Math.abs(a-b) < 1e-5)
+        return true;
+    else
+        return false;
+}
 
 var canvas, context;
 
@@ -134,6 +141,11 @@ function Hex(x, y, r, t)
     this.roads = [];
     for (var i = 0; i < v.length-1; i++)
         this.roads.push([v[i][0], v[i][1], v[i+1][0], v[i+1][1]]);
+
+    /* Get vertices */
+    this.verts = [];
+    for (var i = 0; i < v.length-1; i++)
+        this.verts.push(v[i])
 }
 
 
@@ -231,14 +243,6 @@ function Road(v)
     this.a = [];
 }
 
-function feq(a, b) 
-{
-    if (Math.abs(a-b) < 1e-5)
-        return true;
-    else
-        return false;
-}
-
 Road.prototype.adjacent = function(road)
 {
     if (
@@ -257,6 +261,29 @@ Road.prototype.add_adjacent = function(idx)
     this.a.push(idx);
 }
 
+function Town(v)
+{
+    this.v = v;
+    this.built = false;
+    this.owner = "none";
+    this.adj_roads = [];
+}
+
+Town.prototype.adj_road = function(road)
+{
+    if (
+        (feq(this.v[0], road.v1[0]) && feq(this.v[1], road.v1[1])) ||
+        (feq(this.v[0], road.v2[0]) && feq(this.v[1], road.v2[1]))
+    )
+        return true;
+    else
+        return false;
+}
+
+Town.prototype.add_adj_road = function(idx)
+{
+    this.adj_roads.push(idx);
+}
 
 function shuffle(array) {
   var currentIndex = array.length, temporaryValue, randomIndex;
@@ -277,7 +304,7 @@ function shuffle(array) {
   return array;
 }
 
-function arrays_equal(a, b) 
+function roads_equal(a, b) 
 {
     if (a === b) return true;
     if (a == null || b == null) return false;
@@ -296,12 +323,37 @@ function arrays_equal(a, b)
     return c1 || c2;
 }
 
-Array.prototype.unique = function() 
+Array.prototype.unique_roads = function() 
 {
     var a = this.concat();
     for (var i = 0; i < a.length; ++i) 
         for (var j = i+1; j < a.length; ++j) 
-            if (arrays_equal(a[i], a[j]))
+            if (roads_equal(a[i], a[j]))
+                a.splice(j--, 1);
+
+    return a;
+};
+
+function verts_equal(a, b) 
+{
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    if (a.length != b.length) return false;
+
+    // If you don't care about the order of the elements inside
+    // the array, you should sort both arrays here.
+
+    for (var i = 0; i < a.length; ++i) 
+        if (!feq(a[i], b[i])) return false;
+    return true;
+}
+
+Array.prototype.unique_verts = function() 
+{
+    var a = this.concat();
+    for (var i = 0; i < a.length; ++i) 
+        for (var j = i+1; j < a.length; ++j) 
+            if (verts_equal(a[i], a[j]))
                 a.splice(j--, 1);
 
     return a;
@@ -376,7 +428,7 @@ function setup()
     for (var i = 0; i < hexes.length; i++)
         road_verts = road_verts.concat(hexes[i].roads); 
     //console.log(road_verts.length);
-    road_verts = road_verts.unique();
+    road_verts = road_verts.unique_roads();
     //console.log(road_verts.length);
 
     /* Create road objects */
@@ -391,18 +443,34 @@ function setup()
                 roads[i].add_adjacent(j);
 
     /* Get all vertices (for settlements/cities) */
-    vertices = [];
+    town_verts = [];
     for (var i = 0; i < hexes.length; i++)
-    {
-    
-    }
+        town_verts = town_verts.concat(hexes[i].verts);  
+    console.log(town_verts.length);
+    town_verts = town_verts.unique_verts();
+    console.log(town_verts.length);
 
-    /* Get all midpoints (for roads) */
-    midpoints = [];
-    for (var i = 0; i < hexes.length; i++)
-    {
+    /* Create town objects */
+    towns = []
+    for (var i = 0; i < town_verts.length; i++)
+        towns.push(new Town(town_verts[i]));
 
+    /* Determine town->road adjacency */
+    for (var i = 0; i < towns.length; i++)
+        for (var j = 0; j < roads.length; j++)
+            if (towns[i].adj_road(roads[j]) && i !== j)
+                towns[i].add_adj_road(j);
+
+    /*
+    t = [0,0,0,0,0,0,0,0];
+    for (var i = 0; i < towns.length; i++)
+    {
+        idx = towns[i].adj_roads.length;
+        t[idx] += 1;
     }
+    console.log(t);
+    */    
+
 
     /* Draw all hexes */
     for (var i = 0; i < hexes.length; i++)
