@@ -1,6 +1,10 @@
 <html>
 <body>
 
+<meta http-equiv='cache-control' content='no-cache'>
+<meta http-equiv='expires' content='0'>
+<meta http-equiv='pragma' content='no-cache'>
+
 <style>
 .my_canvas {
     background: #eee; 
@@ -12,11 +16,21 @@
 
 
 <canvas id="board" class="my_canvas" width='700px' height='700px'></canvas> 
-<img src="forest.jpg" id = "forest" alt="forest" height="42" width="42">
+
+<div hidden>
+    <img src="forest.jpg" id = "forest" alt="NO IMG" height="42" width="42">
+    <img src="wheat.jpg" id = "wheat" alt="NO IMG" height="42" width="42">
+    <img src="pasture.jpg" id = "pasture" alt="NO IMG" height="42" width="42">
+    <img src="ore.jpg" id = "ore" alt="NO IMG" height="42" width="42">
+    <img src="brick.jpg" id = "brick" alt="NO IMG" height="42" width="42">
+    <img src="desert.jpg" id = "desert" alt="NO IMG" height="42" width="42">
+</div>
 
 <script type="text/javascript">
 
+
 var canvas, context;
+
 
 // get a reference to the board, and the drawing context
 canvas  = document.getElementById('board');
@@ -37,46 +51,59 @@ function clearCanvas( context, canvas )
     context.clearRect( 0, 0, canvas.width, canvas.height );
 }
 
+/* Event stuff */
+function addEvent( obj, type, fn ) {
 
-/* HexType class with solid color background*/
-function HexTypeSolid(resource, roll)
-{
-    this.resource = resource
-    this.roll = roll
-    if (this.resource == 'wood')
-        this.color = '#663300';
-    else if (this.resource == 'wheat')
-        this.color = '#FFFF00';
-    else if (this.resource == 'pasture')
-        this.color = '#00FF00';
-    else if (this.resource == 'stone')
-        this.color = '#666666';
-    else if (this.resource == 'copper')
-        this.color = '#FF0000';
-    else if (this.resource == 'desert')
-        this.color = '#967117';
+  if ( obj.attachEvent ) {
+
+    obj['e'+type+fn] = fn;
+
+    obj[type+fn] = function(){obj['e'+type+fn]( window.event );}
+
+    obj.attachEvent( 'on'+type, obj[type+fn] );
+
+  } else
+
+    obj.addEventListener( type, fn, false );
+
 }
 
+
 /* HexType class with solid color background*/
-function HexTypeTexture(resource, roll)
+function HexType(resource, roll)
 {
     this.resource = resource
     this.roll = roll
     if (this.resource == 'wood')
     {
-        var img = document.getElementById("forest");
-        this.color = context.createPattern(img, "repeat");
+        this.color = '#663300';
+        this.texture = document.getElementById("forest");
     }
     else if (this.resource == 'wheat')
+    {
         this.color = '#FFFF00';
+        this.texture = document.getElementById("wheat");
+    }
     else if (this.resource == 'pasture')
+    {
         this.color = '#00FF00';
-    else if (this.resource == 'stone')
+        this.texture = document.getElementById("pasture");
+    }    
+    else if (this.resource == 'ore')
+    { 
         this.color = '#666666';
-    else if (this.resource == 'copper')
+        this.texture = document.getElementById("ore");
+    }
+    else if (this.resource == 'brick')
+    { 
         this.color = '#FF0000';
+        this.texture = document.getElementById("brick");
+    }
     else if (this.resource == 'desert')
+    { 
         this.color = '#967117';
+        this.texture = document.getElementById("desert");
+    }
 }
 
 
@@ -92,7 +119,7 @@ function Hex(x, y, r, t)
 
     /* Calculate and store vertices */
     a = (Math.sqrt(3)/2)*r;
-    b = r/2
+    b = r/2;
     v = [];
     v.push([x+r, y]);
     v.push([x+b, y-a]);
@@ -102,73 +129,56 @@ function Hex(x, y, r, t)
     v.push([x+b, y+a]);
     v.push([x+r, y]);
     this.v = v
+
+    /* Get roads */
+    this.roads = [];
+    for (var i = 0; i < v.length-1; i++)
+        this.roads.push([v[i][0], v[i][1], v[i+1][0], v[i+1][1]]);
 }
 
-function clippedBackgroundImage( ctx, img, w, h )
+
+function clippedBackgroundImage( context, img, w, h )
 {
-    ctx.save(); // Save the context before clipping
-    ctx.clip(); // Clip to whatever path is on the context
+    context.save(); // Save the context before clipping
+    context.clip(); // Clip to whatever path is on the context
 
     var imgHeight = w / img.width * img.height;
     if (imgHeight < h){
-    ctx.fillStyle = '#000';
-    ctx.fill();
+    context.fillStyle = '#000';
+    context.fill();
     }
-    ctx.drawImage(img,0,0,w,imgHeight);
+    context.drawImage(img,-w,-h,2*w,2*imgHeight);
 
-    ctx.restore(); // Get rid of the clipping region
+    context.restore(); // Get rid of the clipping region
 }
 
-function slashedRectWithBG( ctx, x, y, w, h, slash, img ){
-  ctx.save(); // Save the context before we muck up its properties
-  ctx.translate(x,y);
-  ctx.beginPath();
-  ctx.moveTo( slash, 0 );       //////////// 
-  ctx.lineTo( w, 0 );          //         //
-  ctx.lineTo( w, h-slash );   //          //
-  ctx.lineTo( w-slash,h );    //          //
-  ctx.lineTo( 0, h );         //         //
-  ctx.lineTo( 0, slash );     ////////////
-  ctx.closePath();
-  clippedBackgroundImage( ctx, img, w, h );
-  ctx.stroke();  // Now draw our path
-  ctx.restore(); // Put the canvas back how it was before we started
-}
 
 Hex.prototype.draw = function()
 {
-    var img = document.getElementById("forest");
+    context.save(); // Save the context before we muck up its properties
+    context.translate(this.x,this.y);
 
-    /* Draw fill */
-    /*
-    context.fillStyle = this.t.color;
     context.beginPath();
-    context.moveTo(this.v[0][0], this.v[0][1]);
+    context.moveTo(this.v[0][0] - this.x, this.v[0][1] - this.y);
     for (var i = 1; i < this.v.length; i++)
     {
-        x = this.v[i][0];
-        y = this.v[i][1];
+        x = this.v[i][0] - this.x;
+        y = this.v[i][1] - this.y;
         context.lineTo(x,y);
     }
     context.closePath();
-    context.fill();
-    */
 
-    /* Draw outline */
-    context.fillStyle = '#000000';
-    context.beginPath();
-    context.moveTo(this.v[0][0], this.v[0][1]);
-    for (var i = 1; i < this.v.length; i++)
-    {
-        x = this.v[i][0];
-        y = this.v[i][1];
-        context.lineTo(x,y);
-    }
-    context.stroke();
+    clippedBackgroundImage( context, this.t.texture, this.r, this.r );
+    context.strokeStyle = '#000000';
+    context.stroke();  // Now draw our path
+    context.restore(); // Put the canvas back how it was before we started
 
     /* Draw roll circles */
     context.beginPath();
     context.arc(this.x, this.y, this.r/3, 0, 2*Math.PI);
+    context.fillStyle = '#FFE4BC';
+    context.fill();
+    context.strokeStyle = '#000000';
     context.stroke();
 
     /* Draw roll numbers */
@@ -177,17 +187,38 @@ Hex.prototype.draw = function()
         xoff = r/10;
     else
         xoff = r/5
+    context.fillStyle = '#000000';
     context.fillText(this.t.roll.toString(), this.x-xoff, this.y+r/10);
+}
+
+Hex.prototype.collision = function(x, y)
+{
+    dx = this.x - x;
+    dy = this.y - y;
+    dist = Math.sqrt((dx*dx) + (dy*dy));
+    if (dist > (Math.sqrt(3)/2)*this.r)
+        return false;
+    else
+        return true;
 }
 
 Hex.prototype.select = function()
 {
     this.s = true;
+    /* Draw roll circles */
+    context.beginPath();
+    context.arc(this.x, this.y, (Math.sqrt(3)/2)*this.r, 0, 2*Math.PI);
+    context.strokeStyle = '#FFFF00';
+    context.stroke();
 }
 
 Hex.prototype.deselect = function()
 {
-    this.s = false;
+    if (this.s == true)
+    {
+        this.s = false;
+        this.draw();
+    }
 }
 
 function shuffle(array) {
@@ -209,7 +240,40 @@ function shuffle(array) {
   return array;
 }
 
-function start()
+function arrays_equal(a, b) 
+{
+    if (a === b) return true;
+    if (a == null || b == null) return false;
+    if (a.length != b.length) return false;
+
+    // If you don't care about the order of the elements inside
+    // the array, you should sort both arrays here.
+
+    c1 = true;
+    for (var i = 0; i < a.length; ++i) 
+        if (a[i] !== b[i]) c1 = false;
+    c2 = true;
+    var c = [b[2],b[3],b[0],b[1]];
+    for (var i = 0; i < a.length; ++i) 
+        if (a[i] !== c[i]) c2 = false;
+    return c1 || c2;
+}
+
+Array.prototype.unique = function() 
+{
+    var a = this.concat();
+    for (var i = 0; i < a.length; ++i) 
+        for (var j = i+1; j < a.length; ++j) 
+            if (arrays_equal(a[i], a[j]))
+                a.splice(j--, 1);
+
+    return a;
+};
+
+/* Global variable game hexes */
+hexes = [];
+
+function setup()
 {
     x0 = 350;
     y0 = 350;
@@ -223,11 +287,11 @@ function start()
     resources = ['wood', 'wood', 'wood', 'wood',
                 'wheat', 'wheat', 'wheat', 'wheat',
                 'pasture', 'pasture', 'pasture', 'pasture',
-                'stone', 'stone', 'stone',
-                'copper', 'copper', 'copper',
+                'ore', 'ore', 'ore',
+                'brick', 'brick', 'brick',
                 'desert'];
 
-    rolls = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12, 7];
+    rolls = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
 
     origins = [ 
                 [0, 0],
@@ -240,26 +304,93 @@ function start()
               ]
 
     /* Shuffle indeces */
-    indices = [];
-    for (var i = 0; i < num_hexes; i++)
-        indices.push(i);
-    shuffle(indices);
-
-    hexes = [];
+    resource_indices = [];
+    roll_indices = [];
     for (var i = 0; i < num_hexes; i++)
     {
-        idx = indices[i]
+        resource_indices.push(i);
+        if (i == num_hexes-1) break; 
+        roll_indices.push(i);
+    }
+    shuffle(resource_indices);
+    shuffle(roll_indices);
+
+    roll_idx = 0;
+    for (var i = 0; i < num_hexes; i++)
+    {
+        /* Get random indices */
+        idx1 = resource_indices[i];
+        idx2 = roll_indices[roll_idx];
+
         /* Create all needed hexes */
-        hexes.push(new Hex(x0+origins[i][0], y0+origins[i][1], r, 
-            new HexTypeTexture(resources[idx], rolls[idx])));
+        if (resources[idx1] == 'desert')
+            hexes.push(new Hex(x0+origins[i][0], y0+origins[i][1], r, 
+                new HexType('desert', 7)));
+        else    
+        {
+            hexes.push(new Hex(x0+origins[i][0], y0+origins[i][1], r, 
+                new HexType(resources[idx1], rolls[idx2])));
+            roll_idx += 1;
+        }
     } 
 
+    /* Get all vertices (for settlements/cities) */
+    roads = [];
+    for (var i = 0; i < hexes.length; i++)
+        roads = roads.concat(hexes[i].roads); 
+    console.log(roads.length);
+    roads = roads.unique();
+    console.log(roads.length);
+
+    /* Get all vertices (for settlements/cities) */
+    vertices = [];
+    for (var i = 0; i < hexes.length; i++)
+    {
+    
+    }
+
+    /* Get all midpoints (for roads) */
+    midpoints = [];
+    for (var i = 0; i < hexes.length; i++)
+    {
+
+    }
+
     /* Draw all hexes */
-    for (var i = 0; i < origins.length; i++)
+    for (var i = 0; i < hexes.length; i++)
         hexes[i].draw();
 }
 
-start();
+addEvent(canvas, 'mousemove', function(e) 
+{
+    var posx = 0;
+    var posy = 0;
+    if (!e) var e = window.event;
+    if (e.pageX || e.pageY)     {
+        posx = e.pageX;
+        posy = e.pageY;
+    }
+    else if (e.clientX || e.clientY)    {
+        posx = e.clientX + document.body.scrollLeft
+            + document.documentElement.scrollLeft;
+        posy = e.clientY + document.body.scrollTop
+            + document.documentElement.scrollTop;
+    }
+    console.log([posx, posy]);
+
+    /* Check posx and posy against hexes using concentric circles */
+    for (var i = 0; i < hexes.length; i++)
+    {
+        if (hexes[i].collision(posx, posy))
+            hexes[i].select();
+        else
+            hexes[i].deselect();
+    }
+    console.log("mouse on canvas!");
+
+});
+
+setup();
 
 </script> 
 
