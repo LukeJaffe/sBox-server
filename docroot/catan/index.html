@@ -333,7 +333,29 @@ Road.prototype.deselect = function()
 
 Road.prototype.click = function()
 {
+    /* Draw road */
+    context.beginPath();
+    context.moveTo(this.v1[0], this.v1[1]);
+    context.lineTo(this.v2[0], this.v2[1]);
+    context.closePath();
+    context.strokeStyle = '#000000';
+    context.lineWidth = 5;
+    context.stroke();  // Now draw our path
 
+    /* Draw road */
+    context.beginPath();
+    context.moveTo(this.v1[0], this.v1[1]);
+    context.lineTo(this.v2[0], this.v2[1]);
+    context.closePath();
+    context.strokeStyle = '#0000FF';
+    context.lineWidth = 4;
+    context.stroke();  // Now draw our path
+    context.lineWidth = 1;
+
+    /* Redraw towns/cities that touch road */
+
+    /* Save the default canvas appearance */
+    default_state = canvas.toDataURL();
 }
 
 function Town(v, r)
@@ -384,32 +406,40 @@ Town.prototype.select = function()
 
 Town.prototype.click = function()
 {
-    console.log("Town clicked!");
-    console.log(this.adj_roads.length);
+    /* Get vertices adjacent to town */
+    verts = [];
+    for (var i = 0; i < this.adj_roads.length; i++)
+    {
+        x = (roads[this.adj_roads[i]].x + this.x)/2;
+        y = (roads[this.adj_roads[i]].y + this.y)/2;
+        verts.push([x, y]);
+    }
+    
+    /* Draw settlement shape based on num available verts */
     if (this.adj_roads.length == 2)
-    {
-    }
-    else if (this.adj_roads.length == 3)
-    {
-        /* Get vertices adjacent to town */
-        verts = [];
-        for (var i = 0; i < this.adj_roads.length; i++)
-            verts.push([roads[this.adj_roads[i]].x, roads[this.adj_roads[i]].y]);
+        verts.push([this.x, this.y])
 
-        console.log(verts);
-
-        /* Draw triangle for town */
-        context.beginPath();
-        context.moveTo(verts[0][0], verts[0][1]);
-        for (var i = 1; i < verts.length; i++)
-        {
-            context.lineTo(verts[i][0], verts[i][1]);
-        }
-        context.lineTo(verts[0][0], verts[0][1]);
-        context.closePath();
-        context.fillStyle = '#0000FF';
-        context.fill();  // Now draw our path
+    /* Draw triangle for town */
+    context.beginPath();
+    context.moveTo(verts[0][0], verts[0][1]);
+    for (var i = 1; i < verts.length; i++)
+    {
+        context.lineTo(verts[i][0], verts[i][1]);
     }
+    context.closePath();
+    context.fillStyle = '#0000FF';
+    context.fill();  // Now draw our path
+
+    /* Draw outline for town */
+    context.beginPath();
+    context.moveTo(verts[0][0], verts[0][1]);
+    for (var i = 1; i < verts.length; i++)
+    {
+        context.lineTo(verts[i][0], verts[i][1]);
+    }
+    context.closePath();
+    context.strokeStyle = '#000000';
+    context.stroke();  // Now draw our path
 
     /* Save the default canvas appearance */
     default_state = canvas.toDataURL();
@@ -584,7 +614,7 @@ function setup()
     /* Determine town->road adjacency */
     for (var i = 0; i < towns.length; i++)
         for (var j = 0; j < roads.length; j++)
-            if (towns[i].adj_road(roads[j]) && i !== j)
+            if (towns[i].adj_road(roads[j]))
                 towns[i].add_adj_road(j);
 
     t = [0,0,0,0,0,0,0,0];
