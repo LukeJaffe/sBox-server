@@ -123,6 +123,7 @@ function Hex(x, y, r, t)
     this.r = r;
     this.t = t;
     this.s = false;
+    this.robber = false;
 
     /* Calculate and store vertices */
     a = (Math.sqrt(3)/2)*r;
@@ -197,9 +198,29 @@ Hex.prototype.draw = function()
     /* Draw roll numbers */
     context.font = "30px Arial";
     if (this.t.roll < 10)
-        xoff = r/10;
+        xoff = this.r/10;
     else
-        xoff = r/5
+        xoff = this.r/5
+    context.fillStyle = '#000000';
+    context.fillText(this.t.roll.toString(), this.x-xoff, this.y+r/10);
+}
+
+Hex.prototype.draw_roll = function()
+{
+    /* Draw roll circles */
+    context.beginPath();
+    context.arc(this.x, this.y, this.r/3, 0, 2*Math.PI);
+    context.fillStyle = '#FFE4BC';
+    context.fill();
+    context.strokeStyle = '#000000';
+    context.stroke();
+
+    /* Draw roll numbers */
+    context.font = "30px Arial";
+    if (this.t.roll < 10)
+        xoff = this.r/10;
+    else
+        xoff = this.r/5
     context.fillStyle = '#000000';
     context.fillText(this.t.roll.toString(), this.x-xoff, this.y+r/10);
 }
@@ -217,7 +238,7 @@ Hex.prototype.collision = function(x, y)
 
 Hex.prototype.select = function()
 {
-    this.s = true;
+    //this.s = true;
     /* Draw roll circles */
     context.beginPath();
     context.arc(this.x, this.y, (Math.sqrt(3)/2)*this.r, 0, 2*Math.PI);
@@ -227,17 +248,42 @@ Hex.prototype.select = function()
 
 Hex.prototype.deselect = function()
 {
+    /*
     if (this.s == true)
     {
         this.s = false;
         this.draw();
     }
+    */
+    state_image = new Image();
+    state_image.src = default_state;
+    state_image.onload = function() { context.drawImage(state_image, 0, 0); }
 }
 
-function Road(v)
+Hex.prototype.click = function()
+{
+    /* Draw the robber */
+    context.beginPath();
+    context.arc(this.x, this.y, this.r/3, 0, 2*Math.PI);
+    context.fillStyle = '#000000';
+    context.fill();
+
+    /* Redraw roll over old robber */
+    hexes[robber_hex].draw_roll();
+    hexes[robber_hex].robber = false;
+    this.robber = true;
+
+    /* Save the default canvas appearance */
+    default_state = canvas.toDataURL();
+}
+
+function Road(v, r)
 {
     this.v1 = [v[0], v[1]];
     this.v2 = [v[2], v[3]];
+    this.x = (v[0]+v[2])/2;
+    this.y = (v[1]+v[3])/2;
+    this.r = r;
     this.built = false;
     this.owner = "none";
     this.a = [];
@@ -261,9 +307,41 @@ Road.prototype.add_adjacent = function(idx)
     this.a.push(idx);
 }
 
-function Town(v)
+Road.prototype.collision = function(x, y)
+{
+    dx = this.x - x;
+    dy = this.y - y;
+    dist = Math.sqrt((dx*dx) + (dy*dy));
+    if (dist > this.r/3)
+        return false;
+    else
+        return true;
+}
+
+Road.prototype.select = function()
+{
+    context.beginPath();
+    context.arc(this.x, this.y, this.r/3, 0, 2*Math.PI);
+    context.strokeStyle = '#FF0000';
+    context.stroke();
+}
+
+Road.prototype.deselect = function()
+{
+
+}
+
+Road.prototype.click = function()
+{
+
+}
+
+function Town(v, r)
 {
     this.v = v;
+    this.x = v[0];
+    this.y = v[1];
+    this.r = r;
     this.built = false;
     this.owner = "none";
     this.adj_roads = [];
@@ -283,6 +361,58 @@ Town.prototype.adj_road = function(road)
 Town.prototype.add_adj_road = function(idx)
 {
     this.adj_roads.push(idx);
+}
+
+Town.prototype.collision = function(x, y)
+{
+    dx = this.x - x;
+    dy = this.y - y;
+    dist = Math.sqrt((dx*dx) + (dy*dy));
+    if (dist > this.r/4)
+        return false;
+    else
+        return true;
+}
+
+Town.prototype.select = function()
+{
+    context.beginPath();
+    context.arc(this.x, this.y, this.r/4, 0, 2*Math.PI);
+    context.strokeStyle = '#0000FF';
+    context.stroke();
+}
+
+Town.prototype.click = function()
+{
+    console.log("Town clicked!");
+    console.log(this.adj_roads.length);
+    if (this.adj_roads.length == 2)
+    {
+    }
+    else if (this.adj_roads.length == 3)
+    {
+        /* Get vertices adjacent to town */
+        verts = [];
+        for (var i = 0; i < this.adj_roads.length; i++)
+            verts.push([roads[this.adj_roads[i]].x, roads[this.adj_roads[i]].y]);
+
+        console.log(verts);
+
+        /* Draw triangle for town */
+        context.beginPath();
+        context.moveTo(verts[0][0], verts[0][1]);
+        for (var i = 1; i < verts.length; i++)
+        {
+            context.lineTo(verts[i][0], verts[i][1]);
+        }
+        context.lineTo(verts[0][0], verts[0][1]);
+        context.closePath();
+        context.fillStyle = '#0000FF';
+        context.fill();  // Now draw our path
+    }
+
+    /* Save the default canvas appearance */
+    default_state = canvas.toDataURL();
 }
 
 function shuffle(array) {
@@ -359,8 +489,10 @@ Array.prototype.unique_verts = function()
     return a;
 };
 
-/* Global variable game hexes */
-hexes = [];
+/* Global variables */
+hexes = [], roads = [], towns = [];
+default_state = 0;
+robber_hex = 0;
 
 function setup()
 {
@@ -427,14 +559,11 @@ function setup()
     road_verts = [];
     for (var i = 0; i < hexes.length; i++)
         road_verts = road_verts.concat(hexes[i].roads); 
-    //console.log(road_verts.length);
     road_verts = road_verts.unique_roads();
-    //console.log(road_verts.length);
 
     /* Create road objects */
-    roads = []
     for (var i = 0; i < road_verts.length; i++)
-        roads.push(new Road(road_verts[i]));
+        roads.push(new Road(road_verts[i], r));
 
     /* Determine road adjacency */
     for (var i = 0; i < roads.length; i++)
@@ -446,14 +575,11 @@ function setup()
     town_verts = [];
     for (var i = 0; i < hexes.length; i++)
         town_verts = town_verts.concat(hexes[i].verts);  
-    console.log(town_verts.length);
     town_verts = town_verts.unique_verts();
-    console.log(town_verts.length);
 
     /* Create town objects */
-    towns = []
     for (var i = 0; i < town_verts.length; i++)
-        towns.push(new Town(town_verts[i]));
+        towns.push(new Town(town_verts[i], r));
 
     /* Determine town->road adjacency */
     for (var i = 0; i < towns.length; i++)
@@ -461,7 +587,6 @@ function setup()
             if (towns[i].adj_road(roads[j]) && i !== j)
                 towns[i].add_adj_road(j);
 
-    /*
     t = [0,0,0,0,0,0,0,0];
     for (var i = 0; i < towns.length; i++)
     {
@@ -469,12 +594,18 @@ function setup()
         t[idx] += 1;
     }
     console.log(t);
-    */    
 
+    /* Draw water for background */
+    context.fillStyle = '#ADD8E6';
+    context.rect(0, 0, 700, 700);
+    context.fill();
 
     /* Draw all hexes */
     for (var i = 0; i < hexes.length; i++)
         hexes[i].draw();
+
+    /* Save the default canvas appearance */
+    default_state = canvas.toDataURL();
 }
 
 addEvent(canvas, 'mousemove', function(e) 
@@ -492,18 +623,80 @@ addEvent(canvas, 'mousemove', function(e)
         posy = e.clientY + document.body.scrollTop
             + document.documentElement.scrollTop;
     }
-    console.log([posx, posy]);
 
     /* Check posx and posy against hexes using concentric circles */
+    state_image = new Image();
+    state_image.src = default_state;
+    context.drawImage(state_image, 0, 0);
     for (var i = 0; i < hexes.length; i++)
     {
         if (hexes[i].collision(posx, posy))
             hexes[i].select();
-        else
-            hexes[i].deselect();
+        //else
+        //    hexes[i].deselect();
     }
-    console.log("mouse on canvas!");
 
+    /* Check posx and posy against roads using concentric circles */
+    for (var i = 0; i < roads.length; i++)
+    {
+        if (roads[i].collision(posx, posy))
+            roads[i].select();
+        //else
+        //    roads[i].deselect();
+    }
+
+    /* Check posx and posy against towns using concentric circles */
+    for (var i = 0; i < towns.length; i++)
+    {
+        if (towns[i].collision(posx, posy))
+            towns[i].select();
+        //else
+        //    towns[i].deselect();
+    }
+});
+
+addEvent(canvas, 'click', function(e) 
+{
+    var posx = 0;
+    var posy = 0;
+    if (!e) var e = window.event;
+    if (e.pageX || e.pageY)     {
+        posx = e.pageX;
+        posy = e.pageY;
+    }
+    else if (e.clientX || e.clientY)    {
+        posx = e.clientX + document.body.scrollLeft
+            + document.documentElement.scrollLeft;
+        posy = e.clientY + document.body.scrollTop
+            + document.documentElement.scrollTop;
+    }
+
+    /* Check posx and posy against hexes using concentric circles */
+    state_image = new Image();
+    state_image.src = default_state;
+    context.drawImage(state_image, 0, 0);
+    for (var i = 0; i < hexes.length; i++)
+    {
+        if (hexes[i].collision(posx, posy) && robber_hex !== i)
+        {
+            hexes[i].click();
+            robber_hex = i;
+        }
+    }
+
+    /* Check posx and posy against roads using concentric circles */
+    for (var i = 0; i < roads.length; i++)
+    {
+        if (roads[i].collision(posx, posy))
+            roads[i].click();
+    }
+
+    /* Check posx and posy against towns using concentric circles */
+    for (var i = 0; i < towns.length; i++)
+    {
+        if (towns[i].collision(posx, posy))
+            towns[i].click();
+    }
 });
 
 setup();
