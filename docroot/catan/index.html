@@ -18,26 +18,21 @@
 <canvas id="board" class="my_canvas" width='700px' height='700px'></canvas> 
 
 <div hidden>
-    <img src="forest.jpg" id = "forest" alt="NO IMG" height="42" width="42">
-    <img src="wheat.jpg" id = "wheat" alt="NO IMG" height="42" width="42">
-    <img src="pasture.jpg" id = "pasture" alt="NO IMG" height="42" width="42">
-    <img src="ore.jpg" id = "ore" alt="NO IMG" height="42" width="42">
-    <img src="brick.jpg" id = "brick" alt="NO IMG" height="42" width="42">
-    <img src="desert.jpg" id = "desert" alt="NO IMG" height="42" width="42">
+    <img src="images/forest.jpg" id = "forest" alt="NO IMG" height="42" width="42">
+    <img src="images/wheat.jpg" id = "wheat" alt="NO IMG" height="42" width="42">
+    <img src="images/pasture.jpg" id = "pasture" alt="NO IMG" height="42" width="42">
+    <img src="images/ore.jpg" id = "ore" alt="NO IMG" height="42" width="42">
+    <img src="images/brick.jpg" id = "brick" alt="NO IMG" height="42" width="42">
+    <img src="images/desert.jpg" id = "desert" alt="NO IMG" height="42" width="42">
 </div>
+
+<script src = "utils.js"></script>
+<script src = "hextype.js"></script>
+<script src = "hex.js"></script>
 
 <script type="text/javascript">
 
-function feq(a, b) 
-{
-    if (Math.abs(a-b) < 1e-5)
-        return true;
-    else
-        return false;
-}
-
 var canvas, context;
-
 
 // get a reference to the board, and the drawing context
 canvas  = document.getElementById('board');
@@ -53,229 +48,6 @@ else
       + "\nYour browser doesn't appear to support this page.");
 }
 
-function clearCanvas( context, canvas ) 
-{
-    context.clearRect( 0, 0, canvas.width, canvas.height );
-}
-
-/* Event stuff */
-function addEvent( obj, type, fn ) {
-
-  if ( obj.attachEvent ) {
-
-    obj['e'+type+fn] = fn;
-
-    obj[type+fn] = function(){obj['e'+type+fn]( window.event );}
-
-    obj.attachEvent( 'on'+type, obj[type+fn] );
-
-  } else
-
-    obj.addEventListener( type, fn, false );
-
-}
-
-
-/* HexType class with solid color background*/
-function HexType(resource, roll)
-{
-    this.resource = resource
-    this.roll = roll
-    if (this.resource == 'wood')
-    {
-        this.color = '#663300';
-        this.texture = document.getElementById("forest");
-    }
-    else if (this.resource == 'wheat')
-    {
-        this.color = '#FFFF00';
-        this.texture = document.getElementById("wheat");
-    }
-    else if (this.resource == 'pasture')
-    {
-        this.color = '#00FF00';
-        this.texture = document.getElementById("pasture");
-    }    
-    else if (this.resource == 'ore')
-    { 
-        this.color = '#666666';
-        this.texture = document.getElementById("ore");
-    }
-    else if (this.resource == 'brick')
-    { 
-        this.color = '#FF0000';
-        this.texture = document.getElementById("brick");
-    }
-    else if (this.resource == 'desert')
-    { 
-        this.color = '#967117';
-        this.texture = document.getElementById("desert");
-    }
-}
-
-
-/* Hex class */
-function Hex(x, y, r, t)
-{
-    /* Store inputs */
-    this.x = x;
-    this.y = y;
-    this.r = r;
-    this.t = t;
-    this.s = false;
-    this.robber = false;
-
-    /* Calculate and store vertices */
-    a = (Math.sqrt(3)/2)*r;
-    b = r/2;
-    v = [];
-    v.push([x+r, y]);
-    v.push([x+b, y-a]);
-    v.push([x-b, y-a]);
-    v.push([x-r, y]);
-    v.push([x-b, y+a]);
-    v.push([x+b, y+a]);
-    v.push([x+r, y]);
-    this.v = v
-
-    /* Get roads */
-    this.roads = [];
-    for (var i = 0; i < v.length-1; i++)
-        this.roads.push([v[i][0], v[i][1], v[i+1][0], v[i+1][1]]);
-
-    /* Get vertices */
-    this.verts = [];
-    for (var i = 0; i < v.length-1; i++)
-        this.verts.push(v[i])
-}
-
-
-function clippedBackgroundImage( context, img, w, h )
-{
-    context.save(); // Save the context before clipping
-    context.clip(); // Clip to whatever path is on the context
-
-    var imgHeight = w / img.width * img.height;
-    if (imgHeight < h){
-    context.fillStyle = '#000';
-    context.fill();
-    }
-    context.drawImage(img,-w,-h,2*w,2*imgHeight);
-
-    context.restore(); // Get rid of the clipping region
-}
-
-
-Hex.prototype.draw = function()
-{
-    /* Draw textures on hexes */
-    context.save(); // Save the context before we muck up its properties
-    context.translate(this.x,this.y);
-
-    context.beginPath();
-    context.moveTo(this.v[0][0] - this.x, this.v[0][1] - this.y);
-    for (var i = 1; i < this.v.length; i++)
-    {
-        x = this.v[i][0] - this.x;
-        y = this.v[i][1] - this.y;
-        context.lineTo(x,y);
-    }
-    context.closePath();
-
-    clippedBackgroundImage( context, this.t.texture, this.r, this.r );
-    context.strokeStyle = '#000000';
-    context.stroke();  // Now draw our path
-    context.restore(); // Put the canvas back how it was before we started
-
-    /* Draw roll circles */
-    context.beginPath();
-    context.arc(this.x, this.y, this.r/3, 0, 2*Math.PI);
-    context.fillStyle = '#FFE4BC';
-    context.fill();
-    context.strokeStyle = '#000000';
-    context.stroke();
-
-    /* Draw roll numbers */
-    context.font = "30px Arial";
-    if (this.t.roll < 10)
-        xoff = this.r/10;
-    else
-        xoff = this.r/5
-    context.fillStyle = '#000000';
-    context.fillText(this.t.roll.toString(), this.x-xoff, this.y+r/10);
-}
-
-Hex.prototype.draw_roll = function()
-{
-    /* Draw roll circles */
-    context.beginPath();
-    context.arc(this.x, this.y, this.r/3, 0, 2*Math.PI);
-    context.fillStyle = '#FFE4BC';
-    context.fill();
-    context.strokeStyle = '#000000';
-    context.stroke();
-
-    /* Draw roll numbers */
-    context.font = "30px Arial";
-    if (this.t.roll < 10)
-        xoff = this.r/10;
-    else
-        xoff = this.r/5
-    context.fillStyle = '#000000';
-    context.fillText(this.t.roll.toString(), this.x-xoff, this.y+r/10);
-}
-
-Hex.prototype.collision = function(x, y)
-{
-    dx = this.x - x;
-    dy = this.y - y;
-    dist = Math.sqrt((dx*dx) + (dy*dy));
-    if (dist > (Math.sqrt(3)/2)*this.r)
-        return false;
-    else
-        return true;
-}
-
-Hex.prototype.select = function()
-{
-    //this.s = true;
-    /* Draw roll circles */
-    context.beginPath();
-    context.arc(this.x, this.y, (Math.sqrt(3)/2)*this.r, 0, 2*Math.PI);
-    context.strokeStyle = '#FFFF00';
-    context.stroke();
-}
-
-Hex.prototype.deselect = function()
-{
-    /*
-    if (this.s == true)
-    {
-        this.s = false;
-        this.draw();
-    }
-    */
-    state_image = new Image();
-    state_image.src = default_state;
-    state_image.onload = function() { context.drawImage(state_image, 0, 0); }
-}
-
-Hex.prototype.click = function()
-{
-    /* Draw the robber */
-    context.beginPath();
-    context.arc(this.x, this.y, this.r/3, 0, 2*Math.PI);
-    context.fillStyle = '#000000';
-    context.fill();
-
-    /* Redraw roll over old robber */
-    hexes[robber_hex].draw_roll();
-    hexes[robber_hex].robber = false;
-    this.robber = true;
-
-    /* Save the default canvas appearance */
-    default_state = canvas.toDataURL();
-}
 
 function Road(v, r)
 {
@@ -544,6 +316,7 @@ function setup()
 
     rolls = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
 
+    /*
     origins = [ 
                 [0, 0],
                 [0, 2*b], [1.5*r, b], [1.5*r, -b],        //First circle
@@ -552,6 +325,14 @@ function setup()
                 [0, -4*b], [-3*r, -2*b], [-3*r, 2*b],     //Second circle p1
                 [3*r, 0], [1.5*r, 3*b], [1.5*r, -3*b],    //Second circle p2
                 [-3*r, 0], [-1.5*r, -3*b], [-1.5*r, 3*b]  //Second circle p2
+              ]
+    */
+    origins = [ 
+                [-2*b, -3*r], [0, -3*r], [2*b, -3*r],                    //First row
+                [-3*b, -1.5*r], [-b, -1.5*r], [b, -1.5*r], [3*b, -1.5*r],//Second Row
+                [-4*b, 0], [-2*b, 0], [0, 0], [2*b, 0], [4*b, 0],        //Third row
+                [-3*b, 1.5*r], [-b, 1.5*r], [b, 1.5*r], [3*b, 1.5*r],    //Fourth row
+                [-2*b, 3*r], [0, 3*r], [2*b, 3*r]                        //Last row
               ]
 
     /* Shuffle indeces */
@@ -661,9 +442,7 @@ addEvent(canvas, 'mousemove', function(e)
     for (var i = 0; i < hexes.length; i++)
     {
         if (hexes[i].collision(posx, posy))
-            hexes[i].select();
-        //else
-        //    hexes[i].deselect();
+            hexes[i].select(context);
     }
 
     /* Check posx and posy against roads using concentric circles */
@@ -671,8 +450,6 @@ addEvent(canvas, 'mousemove', function(e)
     {
         if (roads[i].collision(posx, posy))
             roads[i].select();
-        //else
-        //    roads[i].deselect();
     }
 
     /* Check posx and posy against towns using concentric circles */
@@ -680,8 +457,6 @@ addEvent(canvas, 'mousemove', function(e)
     {
         if (towns[i].collision(posx, posy))
             towns[i].select();
-        //else
-        //    towns[i].deselect();
     }
 });
 
@@ -709,7 +484,9 @@ addEvent(canvas, 'click', function(e)
     {
         if (hexes[i].collision(posx, posy) && robber_hex !== i)
         {
-            hexes[i].click();
+            hexes[robber_hex].draw_roll(context);
+            hexes[robber_hex].robber = false;
+            default_state = hexes[i].click(canvas, context);
             robber_hex = i;
         }
     }

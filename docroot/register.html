@@ -1,0 +1,142 @@
+<html>
+
+<head>
+
+<script src="jquery-1.11.3.min.js"></script>
+
+<style>
+
+body {margin:0;}
+
+fieldset
+{
+    width: 400px;
+}
+
+legend
+{
+    font-size: 20px;
+}
+
+label.field
+{
+    text-align: left;
+    width: 80px;
+    float: left;
+    font-weight: bold;
+}
+
+input.textbox-300
+{
+    width: 300px;
+    float: left;
+}
+
+fieldset p
+{
+    clear: both;
+    padding: 5px;
+}
+
+ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #000000;
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+
+li {
+    float: left;
+}
+
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li a:hover:not(.active) {
+    background-color: #111;
+}
+
+.active {
+    background-color: #4CAF50;
+}
+
+h1
+{
+    position: fixed;
+    top: 100px;
+    color: black;
+    text-align: center;
+    font-family: "Calibri";
+    font-size: xx-large;
+}
+
+h2
+{
+    position: fixed;
+    top: 250px;
+    left: 50px;
+    color: red;
+    text-align: center;
+    font-family: "Calibri";
+    font-size: large;
+}
+
+</style>
+</head>
+
+<body>
+
+<ul>
+  <li><a href="index.html" href="#home">Home</a></li>
+  <li><a href="login.html">Login</a></li>
+  <li><a class="active">Register</a></li>
+  <li><a href="games.html">Games</a></li>
+</ul>
+
+<div style="padding:20px;margin-top:30px;background-color:#FFFFFF;height:1500px;">
+    <form method="post" action="register.php">
+        <fieldset>
+            <Legend>Account Registration</legend>
+                <p><label class="field" for="name">Name:</label>
+                    <input id="name_field" type="text" name="name" class="textbox-300" /></p>
+                <p><label class="field" for="email">Email:</label>
+                    <input id="email_field" type="text" name="email" class="textbox-300" /></p>
+                <p><label class="field" for="username">Username:</label>
+                    <input id="username_field" type="text" name="username" class="textbox-300" /></p>
+                <p><label class="field" for="password">Password:</label>
+                    <input id="password_field" type="password" name="password" class="textbox-300" /></p>
+        </fieldset>
+        <p><input type="button" id="submit" value="Register"></p>
+    </form>
+</div>
+
+<h2></h2>
+
+<script>
+
+$('#submit').click(function()
+{
+    var name_field = document.getElementById("name_field").value;
+    var email_field = document.getElementById("email_field").value;
+    var username_field = document.getElementById("username_field").value;
+    var password_field = document.getElementById("password_field").value;
+    $.post( "http://lucx.info/register.php", { name: name_field, email: email_field, username: username_field, password: password_field }, function(response)
+    {
+        /* Give feedback to user */
+        $("h2").html(response);
+    });
+});
+
+</script>
+
+</body>
+</html>
