@@ -15,6 +15,7 @@
     $username = $_POST["username"];
     $password = $_POST["password"];
 
+
     /* Check validity of field */
     if ($username == "")
         die("Username field cannot be empty!");
@@ -23,9 +24,9 @@
 
     $query = "SELECT username FROM account_info WHERE username=? and password=?";
 
-    if ($stmt = $mysqli->prepare($query))
+    if ($stmt = $conn->prepare($query))
     {
-        $stmt->bind_param('ss', $username, $password)
+        $stmt->bind_param('ss', $username, $password);
         $stmt->execute();
         $stmt->store_result();
         $num_row = $stmt->num_rows;
@@ -35,14 +36,15 @@
     }
     else die("Failed to prepare query");
 
+    $conn->close();
 
     if( $num_row === 1 ) 
     {
-        $_SESSION['userid'] = $username;
-        return true;
+        session_start();
+        $_SESSION['username'] = $username;
+        echo $_SESSION['username'];
+        //print_r($_SESSION);
     }
-
-    return false;
-
-    $conn->close();
+    else
+        echo 1;
 ?>

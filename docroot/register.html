@@ -90,6 +90,14 @@ h2
     font-size: large;
 }
 
+h3
+{
+    color: white;
+    text-align: right;
+    padding: 0px 50px;
+    font-size: medium;
+}
+
 </style>
 </head>
 
@@ -100,6 +108,7 @@ h2
   <li><a href="login.html">Login</a></li>
   <li><a class="active">Register</a></li>
   <li><a href="games.html">Games</a></li>
+  <h3></h3>
 </ul>
 
 <div style="padding:20px;margin-top:30px;background-color:#FFFFFF;height:1500px;">
@@ -122,6 +131,12 @@ h2
 <h2></h2>
 
 <script>
+
+$.post( "http://lucx.info/session.php", function(response)
+{
+    /* Give feedback to user */
+    $("h3").html("Welcome: "+response);
+});
 
 $('#submit').click(function()
 {

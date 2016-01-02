@@ -2,6 +2,9 @@
 <body>
 
 <head>
+
+<script src="jquery-1.11.3.min.js"></script>
+
 <style>
 
 body {margin:0;}
@@ -44,6 +47,22 @@ h1
     font-family: "Calibri";
     font-size: xx-large;
 }
+
+h2
+{
+    color: red;
+    padding: 100px 50px;
+    font-size: medium;
+}
+
+h3
+{
+    color: white;
+    text-align: right;
+    padding: 0px 50px;
+    font-size: medium;
+}
+
 </style>
 </head>
 
@@ -53,11 +72,23 @@ h1
   <li><a href="login.html">Login</a></li>
   <li><a href="register.html">Register</a></li>
   <li><a href="games.html">Games</a></li>
+  <h3></h3>
 </ul>
 
 <div style="padding:20px;margin-top:30px;background-color:#FFFFFF;height:1500px;">
     <h1>Welcome to lucx.info!</h1>
 </div>
+
+<script>
+
+$.post( "http://lucx.info/logger.php");
+
+$.post( "http://lucx.info/session.php", function(response)
+{
+    $("h3").html("Welcome: "+response);
+});
+
+</script>
 
 </body>
 </html>

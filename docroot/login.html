@@ -1,7 +1,11 @@
+
 <html>
 <body>
 
 <head>
+
+<script src="jquery-1.11.3.min.js"></script>
+
 <style>
 
 body {margin:0;}
@@ -37,30 +41,92 @@ li a:hover:not(.active) {
     background-color: #4CAF50;
 }
 
-h1
+h2
 {
-    color: white;
+    position: fixed;
+    top: 250px;
+    left: 50px;
+    color: red;
     text-align: center;
     font-family: "Calibri";
-    font-size: xx-large;
+    font-size: large;
 }
+
+h3
+{
+     color: white;
+     text-align: right;
+     font: inherit;
+     float: right;
+     padding: 0px 20px;
+}
+
+button 
+{
+     color: white;
+     text-align: right;
+     padding: 14px 16px;
+     font-size: medium;
+     font: inherit;
+     background:none!important;
+     border:none; 
+     cursor: pointer;
+}
+
 </style>
 </head>
 
 <ul>
   <li><a href="index.html" href="#home">Home</a></li>
-  <li><a class="active">Login</a></li>
-  <li><a href="register.html">Register</a></li>
   <li><a href="games.html">Games</a></li>
+  <li><a href="register.html">Register</a></li>
+  <li><a class="active">Login</a></li>
+  <li><button id="logout">Logout</button></li>
+  <h3></h3><
 </ul>
 
 <div style="padding:20px;margin-top:30px;background-color:#FFFFFF;height:1500px;">
-    <form action="welcome.php" method="post">
-    Name: <input type="text" name="name"><br>
-    E-mail: <input type="text" name="email"><br>
-    <input type="submit">
+    <form action="login.php" method="post">
+    Username: <input id="username_field" type="text" name="name"><br>
+    Password: <input id="password_field" type="password" name="email"><br>
+    <input type="button" id="submit" value="login">
     </form>
 </div>
+
+<h2></h2>
+
+<script>
+
+$.post( "http://lucx.info/session.php", function(response)
+{
+    /* Give feedback to user */
+    $("h3").html("Welcome: "+response);
+});
+
+$('#submit').click(function()
+{
+    var username_field = document.getElementById("username_field").value;
+    var password_field = document.getElementById("password_field").value;
+    $.post( "http://lucx.info/login.php", { username: username_field, password: password_field }, function(response)
+    {
+        /* Give feedback to user */
+        if (response == 1)
+            $("h2").html("Login failure.");
+        else
+            $("h3").html("Welcome: "+response);
+    });
+});
+
+$('#logout').click(function()
+{
+    $.post( "http://lucx.info/logout.php", function(response)
+    {
+        /* Give feedback to user */
+        $("h3").html("Welcome: "+response);
+    });
+});
+
+</script>
 
 </body>
 </html>

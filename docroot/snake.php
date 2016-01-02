@@ -3,6 +3,8 @@
     header('Access-Control-Allow-Credentials: true');
     header('Access-Control-Allow-Methods: POST, OPTIONS');
 
+    session_start();
+
     $servername = "localhost";
     $username = "webuser";
     $password = "password";
@@ -13,7 +15,9 @@
 
     if ($_POST["p1"] == "WRITE")
     {
-        $name = $_POST["p2"];
+        $name = $_SESSION['username'];
+        if ($name == "") 
+            $name = "guest";
         $score = $_POST["p3"];
         $sql = "INSERT INTO high_scores (name, score) 
                 VALUES ('" . $name . "', '" . $score . "');";
