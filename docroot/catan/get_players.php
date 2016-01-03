@@ -5,6 +5,10 @@
 
     session_start();
 
+    $game = $_SESSION['game'];
+    if ($game == "")
+        die("No game in session...");
+
     $servername = "localhost";
     $dbusername = "webuser";
     $dbpassword = "password";
@@ -13,7 +17,7 @@
     // Create connection
     $conn = new mysqli($servername, $dbusername, $dbpassword, $dbname);
 
-    $sql = "SELECT * FROM lobby_table;";
+    $sql = "SELECT * FROM " . $game . ";";
     $result = $conn->query($sql);
 
     /* fetch object array */
@@ -22,6 +26,7 @@
     {
         $array[] = $row;
     }
+    array_push($array, $_SESSION['username']);
     echo json_encode($array);
 
     /* free result set */

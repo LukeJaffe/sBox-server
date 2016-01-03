@@ -1,5 +1,5 @@
 <?php
-    header('Access-Control-Allow-Origin: http://lucx.info');
+    header('Access-Control-Allow-Origin: *');
     header('Access-Control-Allow-Credentials: true');
     header('Access-Control-Allow-Methods: POST, OPTIONS');
 
@@ -11,8 +11,8 @@
     $dbname = "catan_db";
 
     $game = $_POST['game'];
-    $players = $_POST['players'];
     $host = $_SESSION['username']; 
+    $players = $_POST['players'];
 
     if ($host === "")
     {
@@ -22,16 +22,22 @@
     // Create connection
     $conn = new mysqli($servername, $dbusername, $dbpassword, $dbname);
 
-    $sql = "INSERT INTO lobby_table (game, host, players) 
-            VALUES ('" . $game . "', '" . $host . "',"  . $players . ");";
+    /* Add table into lobby */
+    $sql = "INSERT INTO lobby_table (game, host, players, started) 
+            VALUES ('" . $game . "', '" . $host . "',"  . $players . ", false);";
     if ($conn->query($sql) === TRUE)
-    {
         echo "SUCCESS";
-    }
     else
-    {
         echo "ERROR: " . $sql . "<br>" . $conn->error;
-    }
+
+    /* Add new table for game setup */
+    $sql = "CREATE TABLE " . $game . "
+    (player varchar(25),
+    color varchar(10));";
+    if ($conn->query($sql) === TRUE)
+        echo "SUCCESS";
+    else
+        echo "ERROR: " . $sql . "<br>" . $conn->error;
 
     $conn->close();
 ?>

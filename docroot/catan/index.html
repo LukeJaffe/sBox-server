@@ -38,6 +38,7 @@ h2
         <td></td>
         <td>
             <select id="player_select">
+                <option value="2">2</option>
                 <option value="3">3</option>
                 <option value="4">4</option>
             </select>
@@ -48,6 +49,14 @@ h2
 <h2></h2>
 
 <script>
+
+/* Refresh page every second */
+function refresh()
+{
+    location.reload();
+}
+
+//setInterval(refresh, 1000);
 
 /* Fetch entries from mysql */
 var num_games = 0;
@@ -73,7 +82,7 @@ function(response)
         var cell1 = row.insertCell(0);
         var cell2 = row.insertCell(1);
         var cell3 = row.insertCell(2);
-        cell1.innerHTML = "<td><a href='game.html' >"+result[i][0]+"</a></td>";
+        cell1.innerHTML = "<td><a href='javascript:void(0);' onclick='join_game(\""+result[i][0]+"\");'>"+result[i][0]+"</a></td>";
         cell2.innerHTML = "<td>"+result[i][1]+"</td>";
         cell3.innerHTML = "<td>"+result[i][2]+"</td>";
     }
@@ -84,13 +93,25 @@ $('#new_button').click(function()
 {
     var players = document.getElementById("player_select").value;
     $.post("http://lucx.info/catan/create_game.php", 
-    {game: "Game "+num_games, players: players},
+    {game: "Game"+num_games, players: players},
     function(response)
     {
         $("h2").html(response);
     });
     location.reload();
 });
+
+/* Javascript function to join game */
+function join_game(game)
+{
+    $.post("http://lucx.info/catan/join_game.php", {game: game}, function(response)
+    {
+        if (response == 0 || response == 1)
+            window.location.href = "http://lucx.info/catan/setup.html";
+        else
+            $("h2").html(response);
+    });
+}
 
 </script>
 

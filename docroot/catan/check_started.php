@@ -5,28 +5,19 @@
 
     session_start();
 
+    $game = $_SESSION['game'];
+
+    /* mysql shit */
     $servername = "localhost";
     $dbusername = "webuser";
     $dbpassword = "password";
     $dbname = "catan_db";
-
-    // Create connection
     $conn = new mysqli($servername, $dbusername, $dbpassword, $dbname);
 
-    $sql = "SELECT * FROM lobby_table;";
-    $result = $conn->query($sql);
-
-    /* fetch object array */
-    $array = array();
-    while ($row = $result->fetch_array())
-    {
-        $array[] = $row;
-    }
-    echo json_encode($array);
-
-    /* free result set */
-    $result->close();
-
-    $conn->close();
+    /* Get max num players for this game */
+    $sql = "SELECT started FROM lobby_table WHERE game = '" . $game . "';"; 
+    if ($result = $conn->query($sql))
+        echo $result->fetch_assoc()['started'];
+    else
+        echo "ERROR: " . $sql . "<br>" . $conn->error;
 ?>
-
