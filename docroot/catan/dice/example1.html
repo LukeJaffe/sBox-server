@@ -1,0 +1,18 @@
+<html>
+<head>
+<title>Example File for JavaScript Animated D6 Dice Roller</title>
+<script type='text/javascript' src='http://lucx.info/catan/dice/d6.js'></script>
+</head>
+<body>
+<script type='text/javascript'>
+function attack(result) {
+	if (result < 6)
+		alert('You rolled ' + result + '. You missed your opponent!');
+	else
+		alert('You rolled ' + result + '. You hit your opponent!');
+}
+D6.dice(2, attack);
+</script>
+
+</body>
+</html>

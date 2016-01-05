@@ -82,6 +82,7 @@ Hex.prototype.draw_roll = function(context)
         context.beginPath();
         context.arc(this.x, this.y, this.r/3, 0, 2*Math.PI);
         context.fillStyle = '#FFE4BC';
+        /* Fill er up */
         context.fill();
         context.strokeStyle = '#000000';
         context.stroke();
