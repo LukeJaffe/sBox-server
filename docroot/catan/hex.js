@@ -12,15 +12,6 @@ function Hex(x, y, r, t)
     a = (Math.sqrt(3)/2)*r;
     b = r/2;
     v = [];
-    /*
-    v.push([x+r, y]);
-    v.push([x+b, y-a]);
-    v.push([x-b, y-a]);
-    v.push([x-r, y]);
-    v.push([x-b, y+a]);
-    v.push([x+b, y+a]);
-    v.push([x+r, y]);
-    */
     v.push([x+a, y-b]);
     v.push([x, y-r]);
     v.push([x-a, y-b]);
@@ -58,46 +49,52 @@ Hex.prototype.draw = function()
     context.closePath();
 
     clippedBackgroundImage( context, this.t.texture, this.r, this.r );
+    context.lineWidth = 1;
     context.strokeStyle = '#000000';
     context.stroke();  // Now draw our path
     context.restore(); // Put the canvas back how it was before we started
+    context.lineWidth = 1;
 
-    /* Draw roll circles */
+    this.draw_roll(context);
+}
+
+Hex.prototype.draw_desert = function()
+{
+    /* Draw textures on hexes */
+    context.save(); // Save the context before we muck up its properties
+    context.translate(this.x,this.y);
+
     context.beginPath();
-    context.arc(this.x, this.y, this.r/3, 0, 2*Math.PI);
-    context.fillStyle = '#FFE4BC';
-    context.fill();
-    context.strokeStyle = '#000000';
-    context.stroke();
+    context.moveTo(0, 0);
+    context.arc(0, 0, this.r/3+1, 0, 2*Math.PI);
 
-    /* Draw roll numbers */
-    context.font = "30px Arial";
-    if (this.t.roll < 10)
-        xoff = this.r/10;
-    else
-        xoff = this.r/5
-    context.fillStyle = '#000000';
-    context.fillText(this.t.roll.toString(), this.x-xoff, this.y+r/10);
+    clippedBackgroundImage( context, this.t.texture, this.r, this.r );
+    context.restore(); // Put the canvas back how it was before we started
+
+    this.draw_roll(context);
 }
 
 Hex.prototype.draw_roll = function(context)
 {
-    /* Draw roll circles */
-    context.beginPath();
-    context.arc(this.x, this.y, this.r/3, 0, 2*Math.PI);
-    context.fillStyle = '#FFE4BC';
-    context.fill();
-    context.strokeStyle = '#000000';
-    context.stroke();
+    if (this.t.roll !== 0)
+    {
+        /* Draw roll circles */
+        context.beginPath();
+        context.arc(this.x, this.y, this.r/3, 0, 2*Math.PI);
+        context.fillStyle = '#FFE4BC';
+        context.fill();
+        context.strokeStyle = '#000000';
+        context.stroke();
 
-    /* Draw roll numbers */
-    context.font = "30px Arial";
-    if (this.t.roll < 10)
-        xoff = this.r/10;
-    else
-        xoff = this.r/5
-    context.fillStyle = '#000000';
-    context.fillText(this.t.roll.toString(), this.x-xoff, this.y+r/10);
+        /* Draw roll numbers */
+        context.font = "22px Arial";
+        if (this.t.roll < 10)
+            xoff = this.r/10;
+        else
+            xoff = this.r/5
+        context.fillStyle = '#000000';
+        context.fillText(this.t.roll.toString(), this.x-xoff, this.y+r/10);
+    }
 }
 
 Hex.prototype.collision = function(x, y)

@@ -4,13 +4,35 @@
 <meta http-equiv='expires' content='0'>
 <meta http-equiv='pragma' content='no-cache'>
 
-</head>
+<head>
 <style>
-.my_canvas {
-    background: #eee; 
+#board 
+{
+    background: #D5FBFF; 
     width: 700px; 
     height: 700px; 
-    border: 3px #654321 solid;
+    float: left;
+    box-shadow: inset 0 0 10px #2F3738;
+}
+
+#side
+{
+    position: relative;
+    background-color:#647678;
+    height:700px;
+    width:150px;
+    float:left;
+    box-shadow: 0 0 10px  #2F3738;
+}
+
+#bottom
+{
+    background-color:#647678;
+    height:150px;
+    width:850px;
+    color:white;
+    clear:both;
+    box-shadow: 0 0 10px #2F3738;
 }
 
 ul {
@@ -18,10 +40,8 @@ ul {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #000000;
-    position: fixed;
-    top: 0;
-    width: 100%;
+    background-color: #2F3738;
+    width: 850px;
 }
 
 li {
@@ -37,27 +57,139 @@ li a {
 }
 
 li a:hover:not(.active) {
-    background-color: #111;
+    background-color: #2A3C44;
 }
 
 .active {
-    background-color: #0000FF;
+    color: black;
+    background-color: #9FBCBF;
 }
+
+ul2.vertical
+{
+    margin: 0;
+    padding: 0;
+    float: right;
+}
+
+ul2.vertical button
+{
+    display: block;
+    margin: 0 0 3px 0;
+    padding: 0 10px; 
+    background-color: #9FBCBF;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 100%;
+    padding: 1px;
+    width: 150px;    
+    box-shadow: 0 0 5px #2F3738;
+    border-bottom-left-radius:1em;
+    border-bottom-right-radius:1em;
+    border-top-left-radius:1em;
+    border-top-right-radius:1em;
+}
+
+ul2.vertical h1
+{
+    display: block;
+    padding: 0 10px; 
+    background-color: #9FBCBF;
+    font-family: "Times New Roman", Times, serif;
+    font-size: 100%;
+    text-align: center;
+    color: black;
+    padding: 2px;
+    width: 150px;    
+    border: none;
+    box-shadow: 0 0 5px #2F3738;
+}
+
+h2
+{
+    font-size: 18px;
+    box-shadow: 0 0 5px #2F3738;
+    padding: 4px;
+}
+
+h3
+{
+    margin: 0; 
+    padding: 10px 30px; 
+    color: white;
+    float: right;
+}
+
+.pp
+{
+    margin: 0px 10px;
+}
+
+.pp span
+{
+    float:right; 
+    margin: 0px 10px;
+}
+
+Red {background-color: red;}
+Blue {background-color: blue;}
+Orange {background-color: orange;}
+White {background-color: white;}
+
+td { height: 100%;}
+.bg { background-color: #f00; width: 100%; height: 100%; display: block; }
 
 </style>
 </head>
 
-<body>
+<body style="background-color: #87CEEB;">
 
 <ul>
   <li><a href="http://lucx.info/index.html">Home</a></li>
   <li><a href="http://lucx.info/catan/index.html">Lobby</a></li>
   <li><a class="active" href="#game">Game</a></li>
-  <h3></h3>
+  <h3 id="game_name"></h3>
 </ul>
 
+<canvas id="board" width='700px' height='700px'></canvas> 
 
-<canvas id="board" class="my_canvas" width='700px' height='700px'></canvas> 
+<div id="side">
+    <h2>Turn Timer</h2>
+    <button style="margin: 0px 10px;">Pass Turn</button>
+    <h2>Roll Dice</h2>
+    <button style="margin: 0px 10px;">Roll Dice</button>
+    <h2>Players</h2>
+    <table id="player_table" border="1" cellspacing="5" style="margin: 0px 10px;"></table>
+    <h2>Victory Points</h2>
+    <p class="pp">Towns/Cities: <span id="town_points" class=".pp">0</span></p>
+    <p class="pp">VP Cards: <span id="vpcard_points" class=".pp">0</span></p>
+    <p class="pp">Longest Road: <span id="road_points" class=".pp">0</span></p>
+    <p class="pp">Largest Army: <span id="army_points" class=".pp">0</span></p>
+    <p class="pp">Total: <span id="total_points" class=".pp">0</span></p>
+    <hr color="black">
+    <div style="position: absolute; bottom: 0; ">
+        <img src="images/costs.jpg" width="150" height="200">
+    </div>
+</div>
+
+<div id="bottom">
+    <div style="width: 20%; float:right;">
+        <ul2 class="vertical">
+            <h1>Build Menu</h1>
+            <button id="road_button">Road</button>
+            <button id="town_button">Settlement</button>
+            <button id="city_button">City</button>
+            <button id="card_button">Development Card</button>
+        </ul2>
+    </div>
+    <div style="width: 20%; float:right;">
+        <ul2 class="vertical">
+            <h1>Trade Menu</h1>
+            <button id="bank_button">Bank</button>
+            <button id="port_button">Port</button>
+            <button id="player_button">Player</button>
+        </ul2>
+    </div>
+</div>
 
 <div hidden>
     <img src="images/forest.jpg" id = "forest" alt="NO IMG" height="42" width="42">
@@ -66,7 +198,10 @@ li a:hover:not(.active) {
     <img src="images/ore.jpg" id = "ore" alt="NO IMG" height="42" width="42">
     <img src="images/brick.jpg" id = "brick" alt="NO IMG" height="42" width="42">
     <img src="images/desert.jpg" id = "desert" alt="NO IMG" height="42" width="42">
+    <img src="images/water.jpg" id = "water" alt="NO IMG" height="42" width="42">
 </div>
+
+<script src="jquery-1.11.3.min.js"></script>
 
 <script src = "utils.js"></script>
 <script src = "hextype.js"></script>
@@ -74,6 +209,35 @@ li a:hover:not(.active) {
 
 <script type="text/javascript">
 
+/* Ajax */
+$.post("http://lucx.info/catan/get_game.php", 
+function(response)
+{
+    $("#game_name").html(response);
+});
+
+$.post("http://lucx.info/catan/get_players.php", 
+function(response)
+{
+    /* Get player table */
+    var table = document.getElementById("player_table");
+
+    /* Parse response */
+    var result = $.parseJSON(response);
+
+    /* Draw html elements */
+    for (var i = 0; i < result.length-1; i++)
+    {
+        var row = table.insertRow(0);
+        var cell1 = row.insertCell(0);
+        var cell2 = row.insertCell(1);
+        cell1.innerHTML = "<button style='background-color:#2F3738; color:white;'>"+result[i][0]+"</button>";
+        var c = result[i][1];
+        cell2.innerHTML = "<"+c+">_____</"+c+">";
+    }
+});
+
+/* Game code */
 var canvas, context;
 
 // get a reference to the board, and the drawing context
@@ -218,7 +382,7 @@ Town.prototype.select = function()
     context.stroke();
 }
 
-Town.prototype.click = function()
+Town.prototype.click = function(build_town)
 {
     /* Get vertices adjacent to town */
     verts = [];
@@ -335,14 +499,19 @@ Array.prototype.unique_verts = function()
 
 /* Global variables */
 hexes = [], roads = [], towns = [];
-default_state = 0;
-robber_hex = 0;
+var default_state = 0;
+var robber_hex = 0;
+var build_road = false;
+var build_town = false;
+var build_city = false;
+var build_card = false;
+var place_robber = false;
 
 function setup()
 {
     x0 = 350;
     y0 = 350;
-    r = 75;
+    r = 55;
 
     a = r*0.5;
     b = r*Math.sqrt(3)/2;
@@ -358,24 +527,25 @@ function setup()
 
     rolls = [2, 3, 3, 4, 4, 5, 5, 6, 6, 8, 8, 9, 9, 10, 10, 11, 11, 12];
 
-    /*
-    origins = [ 
-                [0, 0],
-                [0, 2*b], [1.5*r, b], [1.5*r, -b],        //First circle
-                [0, -2*b], [-1.5*r, -b], [-1.5*r, b],     //First circle
-                [0, 4*b], [3*r, 2*b], [3*r, -2*b],        //Second circle p1
-                [0, -4*b], [-3*r, -2*b], [-3*r, 2*b],     //Second circle p1
-                [3*r, 0], [1.5*r, 3*b], [1.5*r, -3*b],    //Second circle p2
-                [-3*r, 0], [-1.5*r, -3*b], [-1.5*r, 3*b]  //Second circle p2
-              ]
-    */
-    origins = [ 
-                [-2*b, -3*r], [0, -3*r], [2*b, -3*r],                    //First row
-                [-3*b, -1.5*r], [-b, -1.5*r], [b, -1.5*r], [3*b, -1.5*r],//Second Row
-                [-4*b, 0], [-2*b, 0], [0, 0], [2*b, 0], [4*b, 0],        //Third row
-                [-3*b, 1.5*r], [-b, 1.5*r], [b, 1.5*r], [3*b, 1.5*r],    //Fourth row
-                [-2*b, 3*r], [0, 3*r], [2*b, 3*r]                        //Last row
-              ]
+    origins = 
+    [ 
+        [-2*b, -3*r], [0, -3*r], [2*b, -3*r],                    //First row
+        [-3*b, -1.5*r], [-b, -1.5*r], [b, -1.5*r], [3*b, -1.5*r],//Second Row
+        [-4*b, 0], [-2*b, 0], [0, 0], [2*b, 0], [4*b, 0],        //Third row
+        [-3*b, 1.5*r], [-b, 1.5*r], [b, 1.5*r], [3*b, 1.5*r],    //Fourth row
+        [-2*b, 3*r], [0, 3*r], [2*b, 3*r]                        //Last row
+    ];
+
+    water_origins = 
+    [
+        [-3*b, -4.5*r], [-b, -4.5*r], [b, -4.5*r], [3*b, -4.5*r],
+        [-4*b, -3*r], [4*b, -3*r],                    
+        [-5*b, -1.5*r], [5*b, -1.5*r],
+        [-6*b, 0], [6*b, 0],        
+        [-5*b, 1.5*r], [5*b, 1.5*r],    
+        [-4*b, 3*r], [4*b, 3*r],       
+        [-3*b, 4.5*r], [-b, 4.5*r], [b, 4.5*r], [3*b, 4.5*r]
+    ];
 
     /* Shuffle indeces */
     resource_indices = [];
@@ -398,8 +568,11 @@ function setup()
 
         /* Create all needed hexes */
         if (resources[idx1] == 'desert')
+        {
             hexes.push(new Hex(x0+origins[i][0], y0+origins[i][1], r, 
-                new HexType('desert', 7)));
+                new HexType('desert', 0)));
+            robber_hex = i;
+        }
         else    
         {
             hexes.push(new Hex(x0+origins[i][0], y0+origins[i][1], r, 
@@ -407,6 +580,13 @@ function setup()
             roll_idx += 1;
         }
     } 
+
+    /* Add water hexes */
+    for (var i = 0; i < water_origins.length; i++)
+    {
+        hexes.push(new Hex(x0+water_origins[i][0], y0+water_origins[i][1], r, 
+            new HexType('water', 0)));
+    }
 
     /* Get all road vertices */
     road_verts = [];
@@ -446,106 +626,123 @@ function setup()
         idx = towns[i].adj_roads.length;
         t[idx] += 1;
     }
-    console.log(t);
-
-    /* Draw water for background */
-    context.fillStyle = '#ADD8E6';
-    context.rect(0, 0, 700, 700);
-    context.fill();
+    //console.log(t);
 
     /* Draw all hexes */
     for (var i = 0; i < hexes.length; i++)
         hexes[i].draw();
 
     /* Save the default canvas appearance */
-    default_state = canvas.toDataURL();
+    default_state = hexes[robber_hex].click(canvas, context);
 }
 
 addEvent(canvas, 'mousemove', function(e) 
 {
-    var posx = 0;
-    var posy = 0;
-    if (!e) var e = window.event;
-    if (e.pageX || e.pageY)     {
-        posx = e.pageX;
-        posy = e.pageY;
-    }
-    else if (e.clientX || e.clientY)    {
-        posx = e.clientX + document.body.scrollLeft
-            + document.documentElement.scrollLeft;
-        posy = e.clientY + document.body.scrollTop
-            + document.documentElement.scrollTop;
-    }
+    /* Get mouse position */
+    var rect = canvas.getBoundingClientRect();
+    var posx = e.clientX - rect.left;
+    var posy = e.clientY - rect.top;
 
-    /* Check posx and posy against hexes using concentric circles */
+    /* Save current state */
     state_image = new Image();
     state_image.src = default_state;
     context.drawImage(state_image, 0, 0);
-    for (var i = 0; i < hexes.length; i++)
-    {
-        if (hexes[i].collision(posx, posy))
-            hexes[i].select(context);
-    }
+
+    /* Check posx and posy against hexes using concentric circles */
+    if (place_robber)
+        for (var i = 0; i < hexes.length; i++)
+        {
+            if (hexes[i].collision(posx, posy))
+                hexes[i].select(context);
+        }
 
     /* Check posx and posy against roads using concentric circles */
-    for (var i = 0; i < roads.length; i++)
-    {
-        if (roads[i].collision(posx, posy))
-            roads[i].select();
-    }
+    if (build_road)
+        for (var i = 0; i < roads.length; i++)
+        {
+            if (roads[i].collision(posx, posy))
+                roads[i].select();
+        }
 
     /* Check posx and posy against towns using concentric circles */
-    for (var i = 0; i < towns.length; i++)
-    {
-        if (towns[i].collision(posx, posy))
-            towns[i].select();
-    }
+    if (build_town || build_city)
+        for (var i = 0; i < towns.length; i++)
+        {
+            if (towns[i].collision(posx, posy))
+                towns[i].select();
+        }
 });
 
 addEvent(canvas, 'click', function(e) 
 {
-    var posx = 0;
-    var posy = 0;
-    if (!e) var e = window.event;
-    if (e.pageX || e.pageY)     {
-        posx = e.pageX;
-        posy = e.pageY;
-    }
-    else if (e.clientX || e.clientY)    {
-        posx = e.clientX + document.body.scrollLeft
-            + document.documentElement.scrollLeft;
-        posy = e.clientY + document.body.scrollTop
-            + document.documentElement.scrollTop;
-    }
+    /* Get mouse position */
+    var rect = canvas.getBoundingClientRect();
+    var posx = e.clientX - rect.left;
+    var posy = e.clientY - rect.top;
 
-    /* Check posx and posy against hexes using concentric circles */
+    /* Save current state */
     state_image = new Image();
     state_image.src = default_state;
     context.drawImage(state_image, 0, 0);
-    for (var i = 0; i < hexes.length; i++)
+    
+    /* Check posx and posy against hexes using concentric circles */
+    if (place_robber)
     {
-        if (hexes[i].collision(posx, posy) && robber_hex !== i)
+        for (var i = 0; i < hexes.length; i++)
         {
-            hexes[robber_hex].draw_roll(context);
-            hexes[robber_hex].robber = false;
-            default_state = hexes[i].click(canvas, context);
-            robber_hex = i;
+            if (hexes[i].collision(posx, posy) && robber_hex !== i)
+            {
+                hexes[robber_hex].draw_roll(context);
+                hexes[robber_hex].robber = false;
+                hexes[i].click(canvas, context);
+                if (hexes[robber_hex].t.resource == 'desert')
+                    hexes[robber_hex].draw_desert();
+                default_state = canvas.toDataURL();
+                robber_hex = i;
+            }
         }
     }
 
     /* Check posx and posy against roads using concentric circles */
-    for (var i = 0; i < roads.length; i++)
+    if (build_road)
     {
-        if (roads[i].collision(posx, posy))
-            roads[i].click();
+        for (var i = 0; i < roads.length; i++)
+        {
+            if (roads[i].collision(posx, posy))
+                roads[i].click();
+        }
+        build_road = false;
     }
 
     /* Check posx and posy against towns using concentric circles */
-    for (var i = 0; i < towns.length; i++)
+    if (build_town || build_city)
     {
-        if (towns[i].collision(posx, posy))
-            towns[i].click();
+        for (var i = 0; i < towns.length; i++)
+        {
+            if (towns[i].collision(posx, posy))
+                towns[i].click(build_town);
+        }
+        build_town = build_city = false;
     }
+});
+
+$("#road_button").click( function()
+{
+    build_road = true;
+});
+
+$("#town_button").click( function()
+{
+    build_town = true;
+});
+
+$("#city_button").click( function()
+{
+    build_city = true;
+});
+
+$("#card_button").click( function()
+{
 });
 
 setup();

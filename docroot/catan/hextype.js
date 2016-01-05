@@ -33,4 +33,9 @@ function HexType(resource, roll)
         this.color = '#967117';
         this.texture = document.getElementById("desert");
     }
+    else if (this.resource == 'water')
+    { 
+        this.color = '#0000FF';
+        this.texture = document.getElementById("water");
+    }
 }
