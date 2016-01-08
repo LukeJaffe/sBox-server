@@ -5,9 +5,9 @@
 
     session_start();
 
-    $game_name = $_SESSION["game"];
-    if ($game_name == "")
-        echo "DEFAULT_GAME";
+    $user_name = $_SESSION["username"];
+    if ($user_name == "")
+        echo "DEFAULT_USER";
     else
-        echo $game_name;
+        echo $user_name;
 ?>

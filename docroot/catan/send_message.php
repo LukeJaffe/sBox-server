@@ -42,20 +42,5 @@
     else
         echo "ERROR: " . $sql . "<br>" . $conn->error;
 
-    /* Add message passing table */
-    $message_table = $game."_messages";
-    $sql = "CREATE TABLE " . $message_table . "
-    (idx INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-    timestamp TIMESTAMP,
-    tag INT,
-    payload VARCHAR(255),
-    sender VARCHAR(50),
-    receiver VARCHAR(50),
-    received BOOL);";
-    if ($conn->query($sql) === TRUE)
-        echo "SUCCESS";
-    else
-        echo "ERROR: " . $sql . "<br>" . $conn->error;
-
     $conn->close();
 ?>

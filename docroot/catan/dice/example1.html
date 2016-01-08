@@ -4,15 +4,21 @@
 <script type='text/javascript' src='http://lucx.info/catan/dice/d6.js'></script>
 </head>
 <body>
+
+
 <script type='text/javascript'>
-function attack(result) {
-	if (result < 6)
-		alert('You rolled ' + result + '. You missed your opponent!');
-	else
-		alert('You rolled ' + result + '. You hit your opponent!');
+
+function callback(result)
+{
+    console.log(result);
 }
-D6.dice(2, attack);
+
+D6.dice(2, callback, "");
 </script>
+
+<button id="test" onclick="D6AnimBuilder.get('dice').reset(); D6AnimBuilder.get('dice').start()">
+    Test
+</button>
 
 </body>
 </html>

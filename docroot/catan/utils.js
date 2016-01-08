@@ -7,19 +7,6 @@ function feq(a, b)
         return false;
 }
 
-/* Events */
-function addEvent(obj, type, fn) 
-{
-    if ( obj.attachEvent ) 
-    {
-        obj['e'+type+fn] = fn;
-        obj[type+fn] = function(){obj['e'+type+fn]( window.event );}
-        obj.attachEvent( 'on'+type, obj[type+fn] );
-    } 
-    else
-        obj.addEventListener( type, fn, false );
-}
-
 /* Graphics */
 function clippedBackgroundImage(context, img, w, h)
 {
@@ -37,7 +24,27 @@ function clippedBackgroundImage(context, img, w, h)
     context.restore(); // Get rid of the clipping region
 }
 
-function clearCanvas( context, canvas ) 
+/* Shuffle array */
+function shuffle(array, seed) 
 {
-    context.clearRect( 0, 0, canvas.width, canvas.height );
+    /* Seed rng with game seed */
+    Math.seedrandom(seed);
+
+    /* stuff */
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) 
+    {
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+
+    return array;
 }

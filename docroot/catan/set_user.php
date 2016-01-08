@@ -5,9 +5,5 @@
 
     session_start();
 
-    $game_name = $_SESSION["game"];
-    if ($game_name == "")
-        echo "DEFAULT_GAME";
-    else
-        echo $game_name;
+    $_SESSION["username"] = $_POST["username"];
 ?>

@@ -7,6 +7,105 @@
 <head>
 <link rel="stylesheet" type="text/css" href="game.css">
 <style></style>
+
+<!-- Scripts -->
+<script src="jquery-1.11.3.min.js"></script>
+<script src = "seedrandom.js"></script>
+<script src = "utils.js"></script>
+<script src = "hextype.js"></script>
+<script src = "hex.js"></script>
+<script src = "road.js"></script>
+<script src = "town.js"></script>
+<script src = "game.js"></script> 
+<script src = "test.js"></script> 
+
+<!-- Game Initialization -->
+<script>
+
+
+/* Game Setup */
+$(window).on("load", function() 
+{
+    /* Instantiate the game class */
+    game = new Game();
+
+    /* Call most setup ajax */
+    game.ajax();
+
+    /* Wait to get the seed, then setup */
+    $.post("http://lucx.info/catan/get_seed.php",
+    {game: "Game1"},
+    function(response)
+    {
+        game.setup(response);
+    });
+
+    /* Event handling */
+    game.events();
+});
+
+function check_loop()
+{
+
+}
+
+function begin_turn()
+{
+    console.log("Starting turn");
+    var btn = document.getElementById("phase_button");
+    var text = btn.firstChild;
+    text.data = "Roll";
+    $("#pass_tag").css("color", "black");
+    $("#roll_tag").css("color", "yellow");
+}
+
+function d6_callback(result) 
+{
+    var btn = document.getElementById("phase_button");
+    var text = btn.firstChild;
+    roll_phase(result);
+    trade_phase();
+}
+
+function roll_phase(value)
+{
+    console.log("You rolled a "+value+"!");
+}
+
+function trade_phase()
+{
+    console.log("Starting trade phase...");
+    var btn = document.getElementById("phase_button");
+    btn.onclick = build_phase;
+    var text = btn.firstChild;
+    text.data = "Build";
+    $("#trade_tag").css("color", "yellow");
+}
+
+function build_phase()
+{
+    console.log("Starting build phase...");
+    var btn = document.getElementById("phase_button");
+    btn.onclick = pass_turn;
+    var text = btn.firstChild;
+    text.data = "Pass";
+    $("#trade_tag").css("color", "black");
+    $("#build_tag").css("color", "yellow");
+}
+
+function pass_turn()
+{
+    console.log("Passing turn");
+    var btn = document.getElementById("phase_button");
+    btn.onclick = begin_turn;
+    var text = btn.firstChild;
+    text.data = "Wait";
+    $("#build_tag").css("color", "black");
+    $("#pass_tag").css("color", "yellow");
+}
+
+</script>
+
 </head>
 
 <body style="background-color: #87CEEB;">
@@ -16,8 +115,18 @@
   <li><a href="http://lucx.info/index.html">Home</a></li>
   <li><a href="http://lucx.info/catan/index.html">Lobby</a></li>
   <li><a class="active" href="#game">Game</a></li>
+  <button id="test_a" style="margin: 12px 50px;">Test A</button>
+  <button id="test_b" style="margin: 12px -40px;">Test B</button>
+  <button id="test_c" style="margin: 12px 50px;">Test C</button>
+  <button id="test_d" style="margin: 12px -40px;">Test D</button>
   <h3 id="game_name"></h3>
+  <h3 id="user_name"></h3>
 </ul>
+
+<script>
+/* Test Setup */
+Test();
+</script>
 
 <!-- Game Board -->
 <div id="game_container">
@@ -28,16 +137,21 @@
 
 <!-- Side Panel -->
 <div id="side">
-    <h2>Turn Timer</h2>
-    <button style="margin: 0px 10px;">Pass Turn</button>
-    <h2>Roll Dice</h2>
+    <h2>Turn Phases</h2>
     <div id="dice_bg">
         <script type='text/javascript' src='http://lucx.info/catan/dice/d6.js'></script>
         <script type='text/javascript'>
-        D6.dice(2);
+        D6.dice(2, d6_callback, "dice/");
         </script>
+        <button id="phase_button" onclick="D6AnimBuilder.get('dice').reset(); D6AnimBuilder.get('dice').start()">
+            Roll
+        </button>
     </div>
     <div id="blank_div"></div>
+    <h4 id="roll_tag">1. Roll</h4>
+    <h4 id="trade_tag">2. Trade</h4>
+    <h4 id="build_tag">3. Build</h4>
+    <h4 id="pass_tag">4. Pass</h4>
     <h2>Players</h2>
     <table id="player_table" border="1" cellspacing="5" style="margin: 0px 10px;"></table>
     <h2>Victory Points</h2>
@@ -47,9 +161,11 @@
     <p class="pp">Largest Army: <span id="army_points" class=".pp">0</span></p>
     <p class="pp">Total: <span id="total_points" class=".pp">0</span></p>
     <hr color="black">
+    <!--
     <div style="position: absolute; bottom: 0; ">
-        <img src="images/costs.jpg" width="150" height="200">
+        <img src="images/costs.jpg" width="150" height="160">
     </div>
+    -->
 </div>
 
 <!-- Bottom Panel -->
@@ -91,19 +207,6 @@
     <img src="images/desert.jpg" id = "desert" alt="NO IMG" height="42" width="42">
     <img src="images/water.jpg" id = "water" alt="NO IMG" height="42" width="42">
 </div>
-
-<!-- Scripts -->
-<script src="jquery-1.11.3.min.js"></script>
-<script src = "utils.js"></script>
-<script src = "hextype.js"></script>
-<script src = "hex.js"></script>
-<script src = "game.js"></script> 
-
-<!-- Game Initialization -->
-<script>
-game = new Game();
-game.setup();
-</script>
 
 </body>
 </html>

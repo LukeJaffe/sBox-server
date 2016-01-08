@@ -42,6 +42,7 @@
         if ($result = $conn->query($sql))
         {
             $_SESSION['game'] = $game;
+            $_SESSION['msg_idx'] = 0;
             echo 0;
         }
         else

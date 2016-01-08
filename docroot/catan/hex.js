@@ -32,7 +32,7 @@ function Hex(x, y, r, t)
         this.verts.push(v[i])
 }
 
-Hex.prototype.draw = function()
+Hex.prototype.draw = function(context)
 {
     /* Draw textures on hexes */
     context.save(); // Save the context before we muck up its properties
@@ -58,7 +58,7 @@ Hex.prototype.draw = function()
     this.draw_roll(context);
 }
 
-Hex.prototype.draw_desert = function()
+Hex.prototype.draw_desert = function(context)
 {
     /* Draw textures on hexes */
     context.save(); // Save the context before we muck up its properties
