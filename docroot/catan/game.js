@@ -29,9 +29,9 @@ function Game()
 Game.prototype.setup = function(seed)
 {
     /* Variables */
-    x0 = 350;
-    y0 = 350;
-    r = 55;
+    x0 = 310;
+    y0 = 285;
+    r = 48;
 
     a = r*0.5;
     b = r*Math.sqrt(3)/2;

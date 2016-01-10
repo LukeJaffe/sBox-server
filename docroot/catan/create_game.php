@@ -47,11 +47,10 @@
     $sql = "CREATE TABLE " . $message_table . "
     (idx INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
     timestamp TIMESTAMP,
-    tag INT,
+    tag VARCHAR(20),
     payload VARCHAR(255),
     sender VARCHAR(50),
-    receiver VARCHAR(50),
-    received BOOL);";
+    receiver VARCHAR(50));";
     if ($conn->query($sql) === TRUE)
         echo "SUCCESS";
     else

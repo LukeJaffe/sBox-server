@@ -12,6 +12,7 @@
 <script src="jquery-1.11.3.min.js"></script>
 <script src = "seedrandom.js"></script>
 <script src = "utils.js"></script>
+<script src = "message.js"></script>
 <script src = "hextype.js"></script>
 <script src = "hex.js"></script>
 <script src = "road.js"></script>
@@ -43,11 +44,6 @@ $(window).on("load", function()
     /* Event handling */
     game.events();
 });
-
-function check_loop()
-{
-
-}
 
 function begin_turn()
 {
@@ -104,6 +100,9 @@ function pass_turn()
     $("#pass_tag").css("color", "yellow");
 }
 
+//console.log(window.screen.availHeight);
+//console.log(window.screen.availWidth);
+
 </script>
 
 </head>
@@ -128,15 +127,8 @@ function pass_turn()
 Test();
 </script>
 
-<!-- Game Board -->
-<div id="game_container">
-    <canvas id="board" width='700px' height='700px'></canvas>
-    <div id="board_shade" hidden></div> 
-    <div id="board_popup" hidden></div>    
-</div>
-
 <!-- Side Panel -->
-<div id="side">
+<div id="left_panel">
     <h2>Turn Phases</h2>
     <div id="dice_bg">
         <script type='text/javascript' src='http://lucx.info/catan/dice/d6.js'></script>
@@ -160,16 +152,24 @@ Test();
     <p class="pp">Longest Road: <span id="road_points" class=".pp">0</span></p>
     <p class="pp">Largest Army: <span id="army_points" class=".pp">0</span></p>
     <p class="pp">Total: <span id="total_points" class=".pp">0</span></p>
-    <hr color="black">
     <!--
+    <hr color="black">
     <div style="position: absolute; bottom: 0; ">
         <img src="images/costs.jpg" width="150" height="160">
     </div>
     -->
 </div>
 
-<!-- Bottom Panel -->
-<div id="bottom">
+<!-- Game Board -->
+<div id="game_container">
+    <canvas id="board" width='620px' height='565px'></canvas>
+    <div id="board_shade" hidden></div> 
+    <div id="board_popup" hidden></div>    
+</div>
+
+<!-- Right Panel -->
+<div id="right_panel">
+    <!--
     <div style="width: 20%; float:right;">
         <ul2 class="vertical">
             <h1>Build Menu</h1>
@@ -195,7 +195,82 @@ Test();
         <img class="rcard" src="images/resources/ore.jpg" width="75" height="100">
         <img class="rcard" src="images/dcard.jpg" width="75" height="100">
     </div>
+    -->
 </div>
+
+<!-- Chat Panel -->
+<div id="chat_panel">
+    <textarea id="text_output" name="Text1" cols="36" rows="30" style="margin:10px; resize:none; background: #D5FBFF;" readonly ></textarea>
+    <textarea id="text_input" name="Text2" cols="36" rows="5" maxlength="255" style="margin:10px; resize:none; background: #D5FBFF;" ></textarea>
+</div>
+
+<script>
+$("#text_input").keypress(function(e) 
+{
+    if(e.which == 13) 
+    {
+        text = $("#text_input").val();
+        if ($.trim($("#text_input").val())) 
+        {
+            $("#text_input").val("");
+            //$("#text_output").val($("#text_output").val()+text+"\n");
+            var message = text; 
+            $.post("http://lucx.info/catan/send_message.php",
+            {tag: MESSAGE.CHAT, payload: message, receiver: "ALL"},
+            function(response)
+            {
+                console.log(response);
+            });
+        }        
+        return false;
+    }
+});
+
+setInterval(function()
+{
+    $.post("http://lucx.info/catan/check_message.php",
+    function(response)
+    {
+        if (response !== "NO_MESSAGES")
+        {
+            /* Parse response */
+            var result = $.parseJSON(response);
+
+            /* Iterate through and handle all new messages */
+            for (var i = 0; i < result.length; i++)
+                handle_message(result[i]);
+        }
+    });
+}, 500);
+
+function handle_message(message)
+{
+    var tag = message[2];
+    var payload = message[3];
+    var sender = message[4];
+    switch(tag)
+    {
+        case MESSAGE.PASS:
+            break;
+        case MESSAGE.DCARD:
+            break;
+        case MESSAGE.MONOPOLY:
+            break;
+        case MESSAGE.ROBBER:
+            break;
+        case MESSAGE.TRADE:
+            break;
+        case MESSAGE.BUILD:
+            break;
+        case MESSAGE.CHAT:
+            $("#text_output").val($("#text_output").val()+sender+": "+payload+"\n");
+            break;
+    }
+}
+</script>
+
+<!-- Bottom Panel -->
+<div id="bottom_bar"></div>
 
 <!-- Hex Tile Images -->
 <div hidden>

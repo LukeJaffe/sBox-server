@@ -3,6 +3,20 @@ function Test()
 
     $("#test_a").click( function()
     {
+        /* Clear the session */
+        $.ajax(
+        {
+            type: 'POST',
+            url: "http://lucx.info/catan/clear_session.php", 
+            async: false
+        }).done
+        (
+            function(response)
+            {
+                console.log(response);
+            }
+        );
+
         /* Truncate the lobby table */
         $.post("http://lucx.info/catan/clear_lobby.php");
 
@@ -89,7 +103,7 @@ function Test()
             }
         );
         
-        //location.reload();
+        location.reload();
     });
     
     $("#test_b").click( function()
@@ -109,6 +123,20 @@ function Test()
 
     function player_setup(name, color)
     {
+        /* Clear the session */
+        $.ajax(
+        {
+            type: 'POST',
+            url: "http://lucx.info/catan/clear_session.php", 
+            async: false
+        }).done
+        (
+            function(response)
+            {
+                console.log(response);
+            }
+        );
+
         /* Set the user */
         $.ajax(
         {

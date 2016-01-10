@@ -88,11 +88,11 @@ Hex.prototype.draw_roll = function(context)
         context.stroke();
 
         /* Draw roll numbers */
-        context.font = "22px Arial";
+        context.font = "18px Arial";
         if (this.t.roll < 10)
-            xoff = this.r/10;
+            xoff = this.r/9;
         else
-            xoff = this.r/5
+            xoff = this.r/5;
         context.fillStyle = '#000000';
         context.fillText(this.t.roll.toString(), this.x-xoff, this.y+r/10);
     }
